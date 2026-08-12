@@ -1,0 +1,68 @@
+---
+interface Props {
+  items: { q: string; a: string }[];
+}
+
+const { items } = Astro.props;
+
+// Микроразметка FAQ: помогает попасть в расширенный сниппет выдачи
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: items.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+---
+
+<section class="faq" id="faq">
+  <div class="layout">
+    <div class="tile faq__intro">
+      <p class="eyebrow">частые вопросы</p>
+      <h2>Что обычно спрашивают</h2>
+    </div>
+
+    <div class="tile faq__list">
+      {items.map((item) => (
+        <details class="faq__item">
+          <summary>{item.q}</summary>
+          <p class="muted">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+</section>
+
+<style>
+  .faq { padding-block: var(--s-4); }
+  .faq__intro { grid-column: span 12; }
+  .faq__list { grid-column: span 12; padding: 0; }
+
+  .faq__item { border-bottom: 1px solid var(--line); }
+  .faq__item:last-child { border-bottom: 0; }
+
+  .faq__item summary {
+    padding: var(--s-4);
+    cursor: pointer;
+    font-weight: 500;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-2);
+    min-height: 48px;
+    align-items: center;
+  }
+
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__item summary::after { content: "+"; font-family: var(--font-mono); color: var(--ink-2); }
+  .faq__item[open] summary::after { content: "−"; }
+  .faq__item p { padding: 0 var(--s-4) var(--s-4); font-size: var(--t-small); }
+
+  @media (min-width: 1024px) {
+    .faq__intro { grid-column: span 4; }
+    .faq__list { grid-column: span 8; }
+  }
+</style>

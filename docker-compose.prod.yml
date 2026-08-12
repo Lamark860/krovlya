@@ -1,0 +1,72 @@
+# Прод-стенд на VPS: статика Astro за nginx + Bun-API для заявок.
+#
+# СЕЙЧАС: голый IP:порт — превью для показа заказчику, домена у проекта ещё нет (блокер Б4).
+# ПОТОМ: домен + HTTPS через общий Traefik — метки заготовлены ниже, снять комментарии
+#         и убрать проброс порта. Порядок перехода — в _local_docs/11_DEPLOY.md.
+#
+# Запуск на сервере (из каталога проекта, рядом .env):
+#   docker compose -f docker-compose.prod.yml up -d --build
+services:
+  web:
+    build:
+      context: ./site
+      args:
+        # Пекутся в статику: canonical, OG, robots.txt. Смена = пересборка, не рестарт.
+        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://example.ru}
+        PUBLIC_INDEXABLE: ${PUBLIC_INDEXABLE:-0}
+    image: krovlya-web:prod
+    container_name: krovlya-web
+    # На VPS 80/443 заняты общим Traefik — публикуемся на свободном порту.
+    ports:
+      - "${WEB_PORT:-8104}:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # --- Домен + HTTPS: раскомментировать вместе с сетью proxy внизу ---
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.krovlya.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)"
+    #   - "traefik.http.routers.krovlya.entrypoints=websecure"
+    #   - "traefik.http.routers.krovlya.tls.certresolver=letsencrypt"
+    #   - "traefik.http.services.krovlya.loadbalancer.server.port=80"
+    #   - "traefik.http.routers.krovlya.middlewares=krovlya-www"
+    #   - "traefik.http.middlewares.krovlya-www.redirectregex.regex=^https://www\\.(.*)"
+    #   - "traefik.http.middlewares.krovlya-www.redirectregex.replacement=https://$${1}"
+    #   - "traefik.http.middlewares.krovlya-www.redirectregex.permanent=true"
+
+  api:
+    build: ./api
+    image: krovlya-api:prod
+    container_name: krovlya-api
+    # Порт наружу НЕ публикуем: nginx ходит к api по внутренней сети compose.
+    # Снаружи API доступен только как /api/ на том же origin, что и сайт.
+    expose:
+      - "8105"
+    environment:
+      # Пока не заданы — заявки копятся в базе и пишутся в лог контейнера.
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+    volumes:
+      - ./data/leads:/app/data    # заявки переживают пересборку контейнера
+      - ./data/files:/app/files   # PDF лид-магнитов
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# --- Домен + HTTPS: подключение к общей сети Traefik ---
+# networks:
+#   default:
+#     name: proxy
+#     external: true

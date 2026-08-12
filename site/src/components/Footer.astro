@@ -1,0 +1,54 @@
+---
+import { company } from "../data/company";
+---
+
+<footer class="footer">
+  <div class="layout">
+    <div class="tile footer__box">
+      <div>
+        <p class="footer__brand">{company.brand}</p>
+        <p class="muted footer__line">{company.showroom.address}</p>
+        <p class="muted footer__line">{company.showroom.hours}</p>
+        <p class="footer__line">
+          <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+        </p>
+        <p class="footer__line">
+          <a href={company.vk} target="_blank" rel="noopener">Наши работы во ВКонтакте</a>
+        </p>
+      </div>
+
+      <div>
+        <p class="eyebrow">документы</p>
+        <p class="footer__line"><a href="/privacy">Политика конфиденциальности</a></p>
+        <p class="footer__line"><a href="/cookies">Политика в отношении cookie</a></p>
+        <p class="muted footer__legal">
+          {company.legalName} · ИНН {company.inn} · ОГРН {company.ogrn}
+        </p>
+        <p class="muted footer__note">
+          Цены на сайте носят справочный характер и не являются публичной офертой.
+          Точная стоимость — после бесплатного замера.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer { padding-block: var(--s-4); }
+
+  .footer__box {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-8) var(--s-4);
+  }
+
+  .footer__brand { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; }
+  .footer__line { font-size: var(--t-small); margin-top: var(--s-1); }
+  .footer__legal { font-size: var(--t-micro); margin-top: var(--s-4); }
+  .footer__note { font-size: var(--t-micro); margin-top: var(--s-2); max-width: 44ch; }
+
+  @media (min-width: 720px) {
+    .footer__box { grid-template-columns: 1fr 1fr; padding: var(--s-8); }
+  }
+</style>

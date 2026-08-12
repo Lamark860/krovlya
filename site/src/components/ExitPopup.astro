@@ -1,0 +1,142 @@
+---
+/**
+ * Exit-popup с лид-магнитом. По методике курса: активируется не сразу (15 секунд
+ * на странице), показывается один раз за сессию, содержит лид-магнит с цифрой выгоды.
+ * Никаких показов по скроллу и таймеру — только уход курсора за пределы окна.
+ */
+interface Props {
+  title: string;
+  lead: string;
+  magnet: string;
+  bullets: string[];
+}
+
+const { title, lead, magnet, bullets } = Astro.props;
+---
+
+<dialog class="popup" data-exit-popup>
+  <div class="popup__inner">
+    <button class="popup__close" data-close aria-label="Закрыть">✕</button>
+    <p class="eyebrow">бесплатно, без звонков</p>
+    <h2 class="popup__title">{title}</h2>
+    <p class="muted">{lead}</p>
+
+    <ul class="popup__bullets">
+      {bullets.map((bullet) => <li>{bullet}</li>)}
+    </ul>
+
+    <form class="popup__form" data-lead data-magnet={magnet}>
+      <div class="channel" role="group" aria-label="Куда прислать">
+        <button type="button" class="channel__btn is-active" data-channel="telegram">Telegram</button>
+        <button type="button" class="channel__btn" data-channel="max">MAX</button>
+        <button type="button" class="channel__btn" data-channel="phone">Звонок</button>
+      </div>
+
+      <label class="field">
+        <span class="field__label">Как к вам обращаться</span>
+        <input name="name" required autocomplete="name" placeholder="Имя" />
+      </label>
+
+      <label class="field">
+        <span class="field__label" data-contact-label>Введите телефон или @username в Telegram</span>
+        <input name="contact" required inputmode="tel" data-contact placeholder="+7 " />
+      </label>
+
+      <input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+      <label class="consent">
+        <input type="checkbox" name="consent" required />
+        <span>Согласен на <a href="/privacy">обработку персональных данных</a> и <a href="/cookies">использование cookie</a></span>
+      </label>
+
+      <button class="btn" type="submit">Получить файл</button>
+      <p class="popup__error" data-error hidden></p>
+    </form>
+  </div>
+</dialog>
+
+<script>
+  const popup = document.querySelector<HTMLDialogElement>("[data-exit-popup]");
+  if (popup && !sessionStorage.getItem("exit-popup-shown")) {
+    let armed = false;
+    setTimeout(() => (armed = true), 15000); // 15 секунд — по методике
+
+    const show = () => {
+      if (!armed || popup.open) return;
+      sessionStorage.setItem("exit-popup-shown", "1");
+      popup.showModal();
+    };
+
+    document.addEventListener("mouseout", (event) => {
+      if (!event.relatedTarget && event.clientY <= 0) show();
+    });
+
+    popup.querySelector("[data-close]")?.addEventListener("click", () => popup.close());
+    popup.addEventListener("click", (event) => {
+      if (event.target === popup) popup.close();
+    });
+  }
+</script>
+
+<style>
+  .popup {
+    border: 0;
+    padding: 0;
+    max-width: 620px;
+    width: calc(100% - var(--s-4));
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .popup::backdrop { background: rgb(28 31 34 / 0.55); }
+
+  .popup__inner {
+    padding: var(--s-8) var(--s-4);
+    display: grid;
+    gap: var(--s-2);
+    position: relative;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .popup__close {
+    position: absolute;
+    top: var(--s-1);
+    right: var(--s-1);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--ink-2);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .popup__title { font-size: var(--t-h2); }
+
+  .popup__bullets {
+    list-style: none;
+    margin: var(--s-2) 0;
+    padding: 0;
+    display: grid;
+    gap: var(--s-1);
+    font-size: var(--t-small);
+  }
+
+  .popup__bullets li { position: relative; padding-left: var(--s-4); }
+  .popup__bullets li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5em;
+    width: 8px;
+    height: 8px;
+    background: var(--warm);
+  }
+
+  .popup__form { display: grid; gap: var(--s-2); margin-top: var(--s-2); }
+  .popup__error { color: #b00020; font-size: var(--t-small); }
+
+  @media (min-width: 720px) {
+    .popup__inner { padding: var(--s-8); }
+  }
+</style>

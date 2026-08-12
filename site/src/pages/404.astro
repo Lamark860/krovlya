@@ -1,0 +1,31 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Base title="Страница не найдена — «Мой ремонт»" description="Такой страницы нет.">
+  <Header />
+
+  <main class="notfound">
+    <div class="layout">
+      <div class="tile notfound__box">
+        <p class="eyebrow">404</p>
+        <h1>Такой страницы нет</h1>
+        <p class="muted">Возможно, ссылка устарела. Посмотрите подборки покрытий или рассчитайте стоимость пола.</p>
+        <p class="notfound__links">
+          <a class="btn" href="/poly">Ламинат и кварцвинил</a>
+          <a class="btn btn--ghost" href="/">На главную</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .notfound { padding-block: var(--s-8); }
+  .notfound__box { grid-column: span 12; padding: var(--s-8) var(--s-4); display: grid; gap: var(--s-2); }
+  .notfound__links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
+</style>

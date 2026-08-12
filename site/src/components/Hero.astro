@@ -1,0 +1,206 @@
+---
+import { company } from "../data/company";
+
+interface Sample {
+  picture: string;
+  name: string;
+  vendor: string;
+  price: number;
+  unit: string;
+  params?: Record<string, string>;
+}
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  titleTail: string;
+  lead: string;
+  gift: string;
+  facts: { value: string; label: string }[];
+  samples: Sample[];
+}
+
+const { eyebrow, title, titleTail, lead, gift, facts, samples } = Astro.props;
+const money = (value: number) => value.toLocaleString("ru-RU");
+
+// Короткое имя коллекции: полные названия из каталога («Ламинат Classen (Германия)
+// VisioGrande 8/32 4V Шифер Эстрик белый») под образцом не читаются.
+const short = (sample: Sample) =>
+  sample.params?.["Коллекция"] || sample.name.split(/[,(]/)[0].replace(/^(Ламинат|SPC|Кварцвинил)\s+/i, "").trim();
+---
+
+<section class="hero">
+  <div class="layout">
+    <div class="tile hero__text lay-in">
+      <p class="eyebrow">{eyebrow}</p>
+      <h1>{title} <span data-geo>{company.geo.default}</span> {titleTail}</h1>
+      <p class="hero__lead">{lead}</p>
+
+      <div class="hero__actions">
+        <a class="btn" href="#quiz">Рассчитать стоимость — 2 минуты</a>
+        <a class="btn btn--ghost" href="#lead">Записаться на замер</a>
+      </div>
+
+      <p class="gift hero__gift">{gift}</p>
+
+      <dl class="hero__facts">
+        {facts.map((fact) => (
+          <div class="hero__fact">
+            <dt class="hero__fact-value num">{fact.value}</dt>
+            <dd class="hero__fact-label muted">{fact.label}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
+    {/* Выкладка образцов: плитки укладываются рядом со швом, у каждой — цена.
+        Без подписей это был просто набор текстур, по которому не считывается смысл. */}
+    {samples.map((sample, index) => (
+      <figure class="tile hero__sample lay-in" style={`animation-delay: ${(index + 1) * 70}ms`}>
+        <img
+          src={sample.picture}
+          alt={sample.name}
+          loading={index === 0 ? "eager" : "lazy"}
+          width="450"
+          height="450"
+        />
+        <figcaption class="hero__caption">
+          <span class="hero__sample-name">{short(sample)}</span>
+          <span class="hero__sample-meta muted">
+            {[sample.vendor, sample.params?.["Класс"] && `${sample.params["Класс"]} класс`]
+              .filter(Boolean).join(" · ")}
+          </span>
+          <span class="hero__sample-price num">
+            {money(sample.price)} <span class="unit">₽/{sample.unit || "м²"}</span>
+          </span>
+
+          {/* Доборный элемент: остаток ряда закрывается паспортом материала,
+              а не воздухом — как подрезанной плиткой в настоящей укладке. */}
+          {index === 0 && (
+            <dl class="hero__passport">
+              {[
+                ["Формат", sample.params?.["Формат"]],
+                ["Толщина", sample.params?.["Толщина, мм"] && `${sample.params["Толщина, мм"]} мм`],
+                ["В упаковке", sample.params?.["В упаковке, м²"] && `${sample.params["В упаковке, м²"]} м²`],
+                ["Тёплый пол", sample.params?.["Тёплый пол"]],
+              ].filter(([, value]) => value).map(([key, value]) => (
+                <div class="hero__passport-row">
+                  <dt class="muted">{key}</dt>
+                  <dd class="num hero__passport-value">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</section>
+
+<style>
+  .hero { padding-block: var(--s-4) var(--s-8); }
+
+  .hero__text {
+    grid-column: span 12;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-8) var(--s-4);
+  }
+
+  .hero__text h1 { max-width: 18ch; }
+
+  .hero__lead {
+    font-size: var(--t-lead);
+    color: var(--ink-2);
+    max-width: 46ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-top: var(--s-2);
+  }
+
+  .hero__gift { align-self: flex-start; }
+
+  .hero__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-4) var(--s-2);
+    margin: var(--s-4) 0 0;
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .hero__fact-value { font-size: 1.5rem; font-weight: 500; line-height: 1.1; }
+  .hero__fact-label { font-size: var(--t-small); margin: 2px 0 0; }
+
+  .hero__sample {
+    grid-column: span 6;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero__sample img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  .hero__caption {
+    display: grid;
+    gap: 2px;
+    padding: var(--s-2);
+    margin-top: auto;
+  }
+
+  .hero__sample-name { font-size: var(--t-small); font-weight: 500; line-height: 1.35; }
+  .hero__sample-meta { font-size: var(--t-micro); }
+  .hero__sample-price { font-size: var(--t-price-card); margin-top: var(--s-1); }
+
+  .hero__passport {
+    display: none;
+    margin-top: var(--s-2);
+    padding-top: var(--s-2);
+    border-top: 1px solid var(--line);
+  }
+
+  .hero__passport-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-2);
+    padding-block: 3px;
+    font-size: var(--t-micro);
+  }
+
+  .hero__passport-value { font-size: var(--t-micro); font-weight: 400; }
+
+  @media (min-width: 720px) {
+    .hero__text { grid-column: span 12; }
+    .hero__sample { grid-column: span 3; }
+    .hero__facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 1024px) {
+    .hero { padding-block: var(--s-2) var(--s-4); }
+
+    /* 8+4 сверху и 4+4+4 снизу: шов на восьмой колонке проходит через оба ряда.
+       При 7+5 швы расходились на 116 px, и раскладка не читалась. */
+    .hero__text { grid-column: span 8; }
+
+    /* Крупный образец справа: картинка забирает высоту, а остаток ряда закрывает
+       паспорт материала — плитка тянется по ряду, контент за ней не поспевает. */
+    .hero__sample:first-of-type { grid-column: span 4; }
+    .hero__sample:first-of-type img { flex: 1; min-height: 0; aspect-ratio: auto; }
+    .hero__sample:first-of-type .hero__passport { display: block; }
+
+    /* Три образца в ряд под текстом — полоса выкладки */
+    .hero__sample:not(:first-of-type) {
+      grid-column: span 4;
+    }
+    .hero__sample:not(:first-of-type) img { aspect-ratio: 3 / 2; }
+  }
+</style>

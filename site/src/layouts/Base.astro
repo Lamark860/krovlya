@@ -1,0 +1,56 @@
+---
+import "../styles/tokens.css";
+import { company } from "../data/company";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Стенд закрыт от поиска: недоделанный лендинг клиента в выдаче — прямой вред.
+// Открывается одним флагом при выкатке на боевой домен (см. _local_docs/11_DEPLOY.md).
+const indexable = import.meta.env.PUBLIC_INDEXABLE === "1";
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {!indexable && <meta name="robots" content="noindex, nofollow" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="ru_RU" />
+
+    <!-- Подстановка города до первой отрисовки: иначе заголовок мигает.
+         Роботам и при отсутствии параметра — всегда значение по умолчанию. -->
+    <script is:inline define:vars={{ geo: company.geo }}>
+      (() => {
+        const key = new URLSearchParams(location.search).get("city");
+        const value = key && geo[key];
+        if (!value) return;
+        document.documentElement.dataset.city = key;
+        addEventListener("DOMContentLoaded", () => {
+          document.querySelectorAll("[data-geo]").forEach((el) => (el.textContent = value));
+          document.querySelectorAll("input[name=geo]").forEach((el) => (el.value = value));
+        });
+      })();
+    </script>
+
+    <!-- Слот под счётчик Яндекс.Метрики: код Максим пришлёт позже -->
+    <!-- METRIKA -->
+  </head>
+  <body>
+    <slot />
+
+    <!-- Слот под виджет чата из amoCRM: подключим, когда решим, нужен ли -->
+    <!-- CHAT -->
+  </body>
+</html>

@@ -1,0 +1,48 @@
+---
+/**
+ * ЗАГЛУШКА. Настоящий текст генерируется по https://tilda.cc/ru/privacy-generator/
+ * и подставляется после ответа на блокер Б1 (ИП Дмитриев А.Н. или ООО «Респект»):
+ * от этого зависит, кто оператор персональных данных.
+ */
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { company } from "../data/company";
+---
+
+<Base
+  title="Политика конфиденциальности — «Мой ремонт»"
+  description="Политика в отношении обработки персональных данных."
+>
+  <Header />
+
+  <main class="doc">
+    <div class="layout">
+      <div class="tile doc__box">
+        <p class="eyebrow">документ готовится</p>
+        <h1>Политика конфиденциальности</h1>
+        <p class="muted">
+          Текст политики в отношении обработки персональных данных находится в подготовке
+          и будет опубликован до запуска рекламы.
+        </p>
+        <p class="muted">
+          Оператор: {company.legalName}, ИНН {company.inn}, ОГРН {company.ogrn}.
+          Адрес: {company.showroom.address}. Контакт для обращений: <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>.
+        </p>
+        <p class="muted">
+          Оставляя контакты в формах на сайте, вы соглашаетесь на обработку указанных данных
+          для связи с вами по вашему запросу: расчёта стоимости, записи на замер и отправки
+          материалов. Данные не передаются третьим лицам, кроме случаев, предусмотренных законом.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .doc { padding-block: var(--s-4) var(--s-8); }
+  .doc__box { grid-column: span 12; padding: var(--s-8) var(--s-4); display: grid; gap: var(--s-2); max-width: none; }
+  .doc__box p { max-width: 68ch; }
+</style>

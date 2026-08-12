@@ -1,0 +1,70 @@
+# Выкатка стенда на VPS: push в master → сборка и подъём контейнеров на сервере.
+#
+# Репозиторий публичный, поэтому адрес сервера, пользователь и путь живут в секретах,
+# а не в тексте воркфлоу: VPS_HOST, VPS_USER, VPS_PATH, VPS_SSH_KEY.
+# Сборка идёт НА сервере — статика Astro лёгкая (6 страниц, одна зависимость),
+# в отличие от next build у соседнего проекта, который ронял VPS.
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-krovlya
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Собрать и поднять на сервере
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 30m
+          script_stop: true
+          script: |
+            set -e
+            cd ${{ secrets.VPS_PATH }}
+            git fetch --prune origin
+            git reset --hard origin/master
+
+            # Каталоги под заявки и PDF: data/ в git не ходит, после клона их нет,
+            # а compose монтирует их как bind — без mkdir docker создаст их от root.
+            mkdir -p data/leads data/files
+
+            docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+            docker image prune -f
+
+      - name: Проверить, что стенд отвечает
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            # Проверяем изнутри контейнера: наружный порт знает только .env на сервере.
+            for i in $(seq 1 15); do
+              if docker exec krovlya-web wget -q -O /dev/null http://127.0.0.1/poly; then
+                echo "страница отдаётся"
+                break
+              fi
+              [ "$i" = "15" ] && { docker logs --tail=50 krovlya-web; exit 1; }
+              sleep 2
+            done
+
+            # Заявки идут через nginx на api по внутренней сети — проверяем всю цепочку.
+            docker exec krovlya-web wget -q -O- http://127.0.0.1/api/health \
+              || { docker logs --tail=50 krovlya-api; exit 1; }
+
+            # 404 должен быть 404, а не 200: иначе поисковик считает мусорные адреса страницами.
+            code=$(docker exec krovlya-web wget -S -q -O /dev/null http://127.0.0.1/nonexistent 2>&1 \
+                   | awk '/HTTP\//{print $2; exit}')
+            [ "$code" = "404" ] || { echo "несуществующий адрес отдал $code"; exit 1; }
+            echo "проверки пройдены"

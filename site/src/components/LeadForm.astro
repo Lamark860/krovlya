@@ -1,0 +1,148 @@
+---
+import { company } from "../data/company";
+
+interface Props {
+  id?: string;
+  title: string;
+  lead: string;
+  submit: string;
+  magnet?: string;
+}
+
+const { id = "lead", title, lead, submit, magnet } = Astro.props;
+---
+
+<section class="leadform section--tint" id={id} style="--tint: var(--accent-tint)">
+  <div class="layout">
+    <div class="tile leadform__box">
+      <div class="leadform__text">
+        <p class="eyebrow">два поля, без звонков без спроса</p>
+        <h2>{title}</h2>
+        <p class="muted">{lead}</p>
+        <p class="leadform__contacts">
+          Или сразу позвоните: <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a><br />
+          <span class="muted">{company.showroom.hours}</span>
+        </p>
+      </div>
+
+      <form class="leadform__form" data-lead data-magnet={magnet}>
+        <div class="channel" role="group" aria-label="Способ связи">
+          <button type="button" class="channel__btn is-active" data-channel="telegram">Telegram</button>
+          <button type="button" class="channel__btn" data-channel="max">MAX</button>
+          <button type="button" class="channel__btn" data-channel="phone">Звонок</button>
+        </div>
+
+        <label class="field">
+          <span class="field__label">Как к вам обращаться</span>
+          <input name="name" required autocomplete="name" placeholder="Имя" />
+        </label>
+
+        <label class="field">
+          <span class="field__label" data-contact-label>Введите ваш телефон</span>
+          <input name="contact" required inputmode="tel" data-contact placeholder="+7 " />
+        </label>
+
+        <input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <input type="hidden" name="geo" value={company.geo.default} />
+
+        <label class="consent">
+          <input type="checkbox" name="consent" required />
+          <span>Согласен на <a href="/privacy">обработку персональных данных</a> и <a href="/cookies">использование cookie</a></span>
+        </label>
+
+        <button class="btn" type="submit">{submit}</button>
+        <p class="leadform__error" data-error hidden></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>("[data-lead]").forEach((form) => {
+    let channel = "telegram";
+    const startedAt = Date.now();
+    const contact = form.querySelector<HTMLInputElement>("[data-contact]")!;
+    const label = form.querySelector<HTMLElement>("[data-contact-label]")!;
+
+    form.querySelectorAll<HTMLButtonElement>(".channel__btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        channel = button.dataset.channel!;
+        form.querySelectorAll(".channel__btn").forEach((b) => b.classList.remove("is-active"));
+        button.classList.add("is-active");
+        label.textContent = channel === "telegram"
+          ? "Введите телефон или @username в Telegram"
+          : channel === "max" ? "Введите номер телефона в MAX" : "Введите ваш телефон";
+      });
+    });
+
+    // Мягкое форматирование: ничего не блокируем, шаблон в поле не подставляем
+    contact.addEventListener("input", () => {
+      if (contact.value.startsWith("@")) return;
+      const digits = contact.value.replace(/\D/g, "").replace(/^8/, "7").slice(0, 11);
+      if (!digits) return;
+      const rest = digits.slice(1);
+      contact.value = "+7"
+        + (rest.length ? ` (${rest.slice(0, 3)}` : "")
+        + (rest.length > 3 ? `) ${rest.slice(3, 6)}` : "")
+        + (rest.length > 6 ? `-${rest.slice(6, 8)}` : "")
+        + (rest.length > 8 ? `-${rest.slice(8, 10)}` : "");
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = form.querySelector("button[type=submit]") as HTMLButtonElement;
+      const error = form.querySelector<HTMLElement>("[data-error]")!;
+      button.disabled = true;
+      error.hidden = true;
+
+      const payload = {
+        name: (form.elements.namedItem("name") as HTMLInputElement).value,
+        contact: contact.value,
+        channel,
+        company: (form.elements.namedItem("company") as HTMLInputElement).value,
+        consent: (form.elements.namedItem("consent") as HTMLInputElement).checked,
+        elapsed: Date.now() - startedAt,
+        page: location.pathname,
+        geo: (form.elements.namedItem("geo") as HTMLInputElement)?.value ?? "",
+        magnet: form.dataset.magnet || null,
+        utm: Object.fromEntries(new URLSearchParams(location.search)),
+      };
+
+      try {
+        const response = await fetch("/api/lead", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await response.json();
+        if (!response.ok) throw new Error(json.error ?? "Не удалось отправить");
+        sessionStorage.setItem("lead", JSON.stringify({ name: payload.name, channel, download: json.download }));
+        location.href = "/thanks";
+      } catch (problem) {
+        error.textContent = problem instanceof Error ? problem.message : "Не удалось отправить";
+        error.hidden = false;
+        button.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .leadform { padding-block: var(--s-4); }
+
+  .leadform__box {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-8);
+    padding: var(--s-8) var(--s-4);
+  }
+
+  .leadform__contacts { margin-top: var(--s-4); font-size: var(--t-small); }
+  .leadform__contacts a { font-weight: 500; text-decoration: none; }
+  .leadform__form { display: grid; gap: var(--s-2); align-content: start; }
+  .leadform__error { color: #b00020; font-size: var(--t-small); }
+
+  @media (min-width: 900px) {
+    .leadform__box { grid-template-columns: 1fr 1fr; padding: var(--s-8); }
+  }
+</style>

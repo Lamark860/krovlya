@@ -1,0 +1,486 @@
+{
+ "poly": [
+  {
+   "slug": "warm-floor",
+   "title": "Можно класть на тёплый пол",
+   "note": "Проверено по паспорту покрытия",
+   "price_from": 2100,
+   "items": [
+    {
+     "id": "56019_8/32_4V",
+     "name": "Ламинат Classen (Германия) VisioGrande 8/32 4V Шифер Эстрик белый",
+     "url": "https://moiremont18.ru/products/laminat-classen-germaniya-visiogrande-8-32-4v-shifer-estrik-belyi",
+     "price": 2760,
+     "unit": "м²",
+     "vendor": "Classen",
+     "picture": "https://moiremont18.ru/pictures/product/big/13496_big.jpg",
+     "params": {
+      "Формат": "605x282x8",
+      "Толщина, мм": "8",
+      "Класс": "32",
+      "Коллекция": "VisioGrande 8/32 4V",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "52343_8/32_4V",
+     "name": "Ламинат Classen (Германия) Pool 8/32 4V Дуб бежевый",
+     "url": "https://moiremont18.ru/products/laminat-classen-germaniya-pool-8-32-4v-dub-bezhevyi",
+     "price": 2420,
+     "unit": "м²",
+     "vendor": "Classen",
+     "picture": "https://moiremont18.ru/pictures/product/big/13514_big.jpg",
+     "params": {
+      "Формат": "1285x192x8",
+      "Толщина, мм": "8",
+      "Класс": "32",
+      "Коллекция": "Pool 8/32 4V",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "52355_8/32_4V",
+     "name": "Ламинат Classen (Германия) Pool 8/32 4V Дуб Кремовый Натуральный",
+     "url": "https://moiremont18.ru/products/laminat-classen-germaniya-pool-8-32-4v-dub-kremovyi-naturalnyi",
+     "price": 2420,
+     "unit": "м²",
+     "vendor": "Classen",
+     "picture": "https://moiremont18.ru/pictures/product/big/13523_big.jpg",
+     "params": {
+      "Формат": "1285x192x8",
+      "Толщина, мм": "8",
+      "Класс": "32",
+      "Коллекция": "Pool 8/32 4V",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "ECO_3-1",
+     "name": "LVT Easy Line Дуб Арктик ECO 3-1",
+     "url": "https://moiremont18.ru/products/kvartsvinilovaya-plitka-lvt-easy-line-dub-arktik-eco-3-1",
+     "price": 2100,
+     "unit": "м²",
+     "vendor": "Alpine Floor",
+     "picture": "https://moiremont18.ru/pictures/product/big/77140_big.jpg",
+     "params": {
+      "Формат": "1219x184x3",
+      "Толщина, мм": "3",
+      "Класс": "34",
+      "Коллекция": "Easy Line LVT",
+      "Тёплый пол": "Да"
+     }
+    }
+   ]
+  },
+  {
+   "slug": "laminate-33",
+   "title": "Ламинат 33 класса для квартиры",
+   "note": "Рабочий выбор для кухни, коридора и гостиной",
+   "price_from": 1780,
+   "items": [
+    {
+     "id": "Most_Floor_А11701",
+     "name": "Ламинат Most Floor 12/33 Бриллиант А11701 Дуб серый",
+     "url": "https://moiremont18.ru/products/laminat-most-floor-12-33-brilliant-a11701-dub-seryi",
+     "price": 2260,
+     "unit": "м²",
+     "vendor": "Most Floor",
+     "picture": "https://moiremont18.ru/pictures/product/big/126005_big.jpg",
+     "params": {
+      "Формат": "1215х240х12",
+      "Толщина, мм": "12",
+      "Класс": "33",
+      "Коллекция": "Бриллиант 12/33",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "Most_Floor_А11709",
+     "name": "Ламинат Most Floor 12/33 Бриллиант А11709 Венге",
+     "url": "https://moiremont18.ru/products/laminat-most-floor-12-33-brilliant-a11709-venge",
+     "price": 2260,
+     "unit": "м²",
+     "vendor": "Most Floor",
+     "picture": "https://moiremont18.ru/pictures/product/big/126012_big.jpg",
+     "params": {
+      "Формат": "1215х240х12",
+      "Толщина, мм": "12",
+      "Класс": "33",
+      "Коллекция": "Бриллиант 12/33",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "EPL122-Large_833_4V",
+     "name": "Ламинат Egger Pro Large Aqua plus Дуб Уолтем натуральный",
+     "url": "https://moiremont18.ru/products/laminat-egger-pro-large-dub-uoltem-naturalnyi",
+     "price": 1780,
+     "unit": "м²",
+     "vendor": "Egger PRO",
+     "picture": "https://moiremont18.ru/pictures/product/big/13154_big.jpg",
+     "params": {
+      "Формат": "1292x246x8",
+      "Толщина, мм": "8",
+      "Класс": "33",
+      "Коллекция": "Large 8/33 4V",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "EPL123-Large_833_4V",
+     "name": "Ламинат Egger Pro Large Aqua plus Дуб Уолтем белый",
+     "url": "https://moiremont18.ru/products/laminat-egger-pro-large-dub-uoltem-belyi",
+     "price": 1780,
+     "unit": "м²",
+     "vendor": "Egger PRO",
+     "picture": "https://moiremont18.ru/pictures/product/big/13156_big.jpg",
+     "params": {
+      "Формат": "1292x246x8",
+      "Толщина, мм": "8",
+      "Класс": "33",
+      "Коллекция": "Large 8/33 4V",
+      "Тёплый пол": "Да"
+     }
+    }
+   ]
+  },
+  {
+   "slug": "spc-waterproof",
+   "title": "Кварцвинил, который не боится воды",
+   "note": "SPC: не разбухает и не расходится в замках",
+   "price_from": 2590,
+   "items": [
+    {
+     "id": "ALX1071-3",
+     "name": "SPC AlixFloor, City Line, Дуб бергамо серый 1220 х 183 х 5 мм",
+     "url": "https://moiremont18.ru/products/spc-alixfloor-city-line-dub-bergamo-seryi-1220-kh-183-kh-5-mm",
+     "price": 2590,
+     "unit": "м²",
+     "vendor": "AlixFloor",
+     "picture": "https://moiremont18.ru/pictures/product/big/49291_big.jpg",
+     "params": {
+      "Формат": "1220 х 183 х 5 мм",
+      "Толщина, мм": "5",
+      "Класс": "43",
+      "Коллекция": "City Line",
+      "Тёплый пол": "Да, максимум +27С"
+     }
+    },
+    {
+     "id": "ALX1078-4",
+     "name": "SPC AlixFloor, City Line, Дуб белый крафт 1220 х 183 х 5 мм",
+     "url": "https://moiremont18.ru/products/spc-alixfloor-city-line-dub-belyi-kraft-1220-kh-183-kh-5-mm",
+     "price": 2590,
+     "unit": "м²",
+     "vendor": "AlixFloor",
+     "picture": "https://moiremont18.ru/pictures/product/big/49295_big.jpg",
+     "params": {
+      "Формат": "1220 х 183 х 5 мм",
+      "Толщина, мм": "5",
+      "Класс": "43",
+      "Коллекция": "City Line",
+      "Тёплый пол": "Да, максимум +27С"
+     }
+    },
+    {
+     "id": "ALX1070-4",
+     "name": "SPC AlixFloor, Natural Line, Дуб медовый светлый 1220 х 183 х 5 мм",
+     "url": "https://moiremont18.ru/products/spc-alixfloor-natural-line-dub-medovyi-svetlyi-1220-kh-183-kh-5-mm",
+     "price": 2590,
+     "unit": "м²",
+     "vendor": "AlixFloor",
+     "picture": "https://moiremont18.ru/pictures/product/big/49288_big.jpg",
+     "params": {
+      "Формат": "1220 х 183 х 5 мм",
+      "Толщина, мм": "5",
+      "Класс": "43",
+      "Коллекция": "Natural Line",
+      "Тёплый пол": "Да, максимум +27С"
+     }
+    },
+    {
+     "id": "ALX1562-8",
+     "name": "SPC AlixFloor, Natural Line, Дуб натуральный светлый 1220 х 183 х 5 мм",
+     "url": "https://moiremont18.ru/products/spc-alixfloor-natural-line-dub-naturalnyi-svetlyi-1220-kh-183-kh-5-mm",
+     "price": 2590,
+     "unit": "м²",
+     "vendor": "AlixFloor",
+     "picture": "https://moiremont18.ru/pictures/product/big/49311_big.jpg",
+     "params": {
+      "Формат": "1220 х 183 х 5 мм",
+      "Толщина, мм": "5",
+      "Класс": "43",
+      "Коллекция": "Natural Line",
+      "Тёплый пол": "Да, максимум +27С"
+     }
+    }
+   ]
+  },
+  {
+   "slug": "class-43",
+   "title": "43 класс — под аренду и коммерцию",
+   "note": "Повышенная износостойкость",
+   "price_from": 2390,
+   "items": [
+    {
+     "id": "ECO_20-1",
+     "name": "LVT ламинат Chevron Alpine Дуб Фантазия ECO 20-1",
+     "url": "https://moiremont18.ru/products/lvt-laminat-chevron-alpine-dub-fantaziya-eco-20-1",
+     "price": 2950,
+     "unit": "м²",
+     "vendor": "Alpine Floor",
+     "picture": "https://moiremont18.ru/pictures/product/big/23368_big.jpg",
+     "params": {
+      "Формат": "555x127x2,5",
+      "Толщина, мм": "2,5",
+      "Класс": "43",
+      "Коллекция": "Chevron Alpine LVT",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "ECO_20-2",
+     "name": "LVT ламинат Chevron Alpine Дуб Ваниль Селект ECO 20-2",
+     "url": "https://moiremont18.ru/products/lvt-laminat-chevron-alpine-dub-vanil-selekt-eco-20-2",
+     "price": 2950,
+     "unit": "м²",
+     "vendor": "Alpine Floor",
+     "picture": "https://moiremont18.ru/pictures/product/big/23371_big.jpg",
+     "params": {
+      "Формат": "555x127x2,5",
+      "Толщина, мм": "2,5",
+      "Класс": "43",
+      "Коллекция": "Chevron Alpine LVT",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "1005-01",
+     "name": "SPC ламинат Art Parquet Tesoro 1005-01",
+     "url": "https://moiremont18.ru/products/spc-laminat-art-parquet-tesoro-1005-01",
+     "price": 2499,
+     "unit": "м²",
+     "vendor": "Tulesna",
+     "picture": "https://moiremont18.ru/pictures/product/big/31372_big.jpg",
+     "params": {
+      "Формат": "600х125х4",
+      "Толщина, мм": "4",
+      "Класс": "43",
+      "Коллекция": "Art Parquet",
+      "Тёплый пол": "Да"
+     }
+    },
+    {
+     "id": "3003",
+     "name": "SPC Planker Elegant Line Дуб Монумент арт.3003",
+     "url": "https://moiremont18.ru/products/laminat-spc-planker-elegant-line-dub-monument-art-3003",
+     "price": 2390,
+     "unit": "м²",
+     "vendor": "Planker",
+     "picture": "https://moiremont18.ru/pictures/product/big/63268_big.jpg",
+     "params": {
+      "Формат": "1220х128х4",
+      "Толщина, мм": "4",
+      "Класс": "43",
+      "Коллекция": "Elegant Line",
+      "Тёплый пол": "Да"
+     }
+    }
+   ]
+  }
+ ],
+ "plitka": [
+  {
+   "slug": "large-format",
+   "title": "Крупноформат 600×1200 и больше",
+   "note": "Меньше швов — проще уход",
+   "price_from": 2590,
+   "items": [
+    {
+     "id": "GT120600203MR",
+     "name": "GT120600203MR Плитка грес глаз. Marmo_GT Белый 60*120 _ 1 \\43,2",
+     "url": "https://moiremont18.ru/products/plitka-gres-glaz-marmo_gt-belyi-60-120",
+     "price": 2590,
+     "unit": "м²",
+     "vendor": "Global Tile",
+     "picture": "https://moiremont18.ru/pictures/product/big/12798_big.jpg",
+     "params": {
+      "Формат": "1200х600х9",
+      "Толщина, мм": "9",
+      "Коллекция": "Marmo_GT"
+     }
+    },
+    {
+     "id": "VT60-R2112063",
+     "name": "Керамогранит Vitra Marble-X Бреча капрайа белый 600х1200 (1,44*46,08)",
+     "url": "https://moiremont18.ru/products/keramogranit-vitra-marble-x-brecha-kapraia-belyi-600kh1200-1-44-46-08",
+     "price": 3207,
+     "unit": "м²",
+     "vendor": "Vitra",
+     "picture": "https://moiremont18.ru/pictures/product/big/24551_big.jpg",
+     "params": {
+      "Формат": "600х1200",
+      "Толщина, мм": "9",
+      "Коллекция": "Marble-X"
+     }
+    },
+    {
+     "id": "VT60-R2112065",
+     "name": "Керамогранит Vitra MarbleSet Иллюжн Темно-серый 600х1200 (1,44*46,08)",
+     "url": "https://moiremont18.ru/products/keramogranit-vitra-marbleset-illiuzhn-temno-seryi-600kh1200-1-44-46-08",
+     "price": 3207,
+     "unit": "м²",
+     "vendor": "Vitra",
+     "picture": "https://moiremont18.ru/pictures/product/big/24565_big.jpg",
+     "params": {
+      "Формат": "600х1200",
+      "Толщина, мм": "9",
+      "Коллекция": "MarbleSet"
+     }
+    },
+    {
+     "id": "VT60-R2112071",
+     "name": "Керамогранит Vitra Quarstone Антрацит 600х1200 (1,44*46,08)",
+     "url": "https://moiremont18.ru/products/keramogranit-vitra-quarstone-antratsit-600kh1200-1-44-46-08",
+     "price": 2897,
+     "unit": "м²",
+     "vendor": "Vitra",
+     "picture": "https://moiremont18.ru/pictures/product/big/24604_big.jpg",
+     "params": {
+      "Формат": "600х1200",
+      "Толщина, мм": "9",
+      "Коллекция": "Quarstone"
+     }
+    }
+   ]
+  },
+  {
+   "slug": "small-format",
+   "title": "Мелкий формат и «кабанчик»",
+   "note": "Для акцентных стен и санузлов",
+   "price_from": 5556,
+   "items": [
+    {
+     "id": "Equipe_31844",
+     "name": "Гранит керамический 31844 ARES Cotto 20х20 см",
+     "url": "https://moiremont18.ru/products/granit-keramicheskii-31844-ares-cotto-20kh20-sm",
+     "price": 5556,
+     "unit": "",
+     "vendor": "Equipe",
+     "picture": "https://moiremont18.ru/pictures/product/big/128047_big.jpeg",
+     "params": {
+      "Формат": "200х200",
+      "Толщина, мм": "8",
+      "Коллекция": "ARES"
+     }
+    },
+    {
+     "id": "Equipe_31845",
+     "name": "Гранит керамический 31845 ARES Natural 20х20 см",
+     "url": "https://moiremont18.ru/products/granit-keramicheskii-31845-ares-natural-20kh20-sm",
+     "price": 5556,
+     "unit": "",
+     "vendor": "Equipe",
+     "picture": "https://moiremont18.ru/pictures/product/big/128050_big.jpeg",
+     "params": {
+      "Формат": "200х200",
+      "Толщина, мм": "8",
+      "Коллекция": "ARES"
+     }
+    },
+    {
+     "id": "Equipe_27572",
+     "name": "Гранит керамический 27572 ARGILE Concrete 10х10 см (98 кор./палл.)",
+     "url": "https://moiremont18.ru/products/granit-keramicheskii-27572-argile-concrete-10kh10-sm-98-kor-pall",
+     "price": 5957,
+     "unit": "",
+     "vendor": "Equipe",
+     "picture": "https://moiremont18.ru/pictures/product/big/128093_big.jpeg",
+     "params": {
+      "Формат": "100х100",
+      "Толщина, мм": "9",
+      "Коллекция": "ARGILE"
+     }
+    },
+    {
+     "id": "Equipe_27577",
+     "name": "Гранит керамический 27577 ARGILE Khaki 10х10 см (98 кор./палл.)",
+     "url": "https://moiremont18.ru/products/granit-keramicheskii-27577-argile-khaki-10kh10-sm-98-kor-pall",
+     "price": 5957,
+     "unit": "",
+     "vendor": "Equipe",
+     "picture": "https://moiremont18.ru/pictures/product/big/128104_big.jpeg",
+     "params": {
+      "Формат": "100х100",
+      "Толщина, мм": "9",
+      "Коллекция": "ARGILE"
+     }
+    }
+   ]
+  },
+  {
+   "slug": "600x600",
+   "title": "Керамогранит 600×600",
+   "note": "Универсальный формат для пола",
+   "price_from": 2290,
+   "items": [
+    {
+     "id": "436229",
+     "name": "Керамогранит French Smoke светло-серый 60x60 Полированный",
+     "url": "https://moiremont18.ru/products/french-smoke-keramogranit-svetlo-seryi-60x60-polirovannyi-1-1",
+     "price": 2330,
+     "unit": "м²",
+     "vendor": "Laparet",
+     "picture": "https://moiremont18.ru/pictures/product/big/25357_big.jpeg",
+     "params": {
+      "Формат": "600х600",
+      "Толщина, мм": "8,6",
+      "Коллекция": "French"
+     }
+    },
+    {
+     "id": "G-1101/CR/600x600x9",
+     "name": "Керамогранит 600*600 Beton Бежевый С Sugar-Эффектом G-1101/Cr",
+     "url": "https://moiremont18.ru/products/keramogranit-600-600-beton-bezhevyi-s-sugar-effektom-g-1101-cr",
+     "price": 2294,
+     "unit": "м²",
+     "vendor": "Grasaro",
+     "picture": "https://moiremont18.ru/pictures/product/big/29872_big.jpg",
+     "params": {
+      "Формат": "600х600",
+      "Толщина, мм": "10",
+      "Коллекция": "Beton"
+     }
+    },
+    {
+     "id": "G-1105/CR/600x600x9",
+     "name": "Керамогранит 600*600 Beton Серо-Бежевый Sugar-Эффектом G-1105/Cr",
+     "url": "https://moiremont18.ru/products/keramogranit-600-600-beton-sero-bezhevyi-sugar-effektom-g-1105-cr",
+     "price": 2294,
+     "unit": "м²",
+     "vendor": "Grasaro",
+     "picture": "https://moiremont18.ru/pictures/product/big/29878_big.jpg",
+     "params": {
+      "Формат": "600х600",
+      "Толщина, мм": "10",
+      "Коллекция": "Beton"
+     }
+    },
+    {
+     "id": "GP40COT01R",
+     "name": "Corten Light GP40COT01R Керамогранит матовый 600*600*9,5 (4 шт в уп/43,2 м в пал)",
+     "url": "https://moiremont18.ru/products/corten-light-gp40cot01r-keramogranit-matovyi-600-600-9-5-4-sht-v-up-43-2-m-v-pal",
+     "price": 2290,
+     "unit": "м²",
+     "vendor": "New Trend",
+     "picture": "https://moiremont18.ru/pictures/product/big/32052_big.jpg",
+     "params": {
+      "Формат": "600х600",
+      "Толщина, мм": "9,5",
+      "Коллекция": "Corten"
+     }
+    }
+   ]
+  }
+ ]
+}

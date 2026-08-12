@@ -1,0 +1,292 @@
+/* Токены направления «Раскладка». Источник правды — _local_docs/08_DESIGN.md.
+   Значения кеглей и трекинга — из замеров viz-lab (_local_docs/10_VIZ_LAB.md, п. 7.1).
+   Менять только вместе с документами, иначе визуал разъедется. */
+
+@import "./fonts.css";
+
+:root {
+  /* Цвет. Контрасты проверены по WCAG, см. 10_VIZ_LAB.md п. 4 */
+  --bg: #e8e8e3;          /* фон-затирка */
+  --bg-warm: #f0f0eb;     /* тёплый фон под секции с фото */
+  --surface: #ffffff;     /* «плитка»: блоки, карточки, элементы управления */
+  --ink: #1c1f22;         /* графит, основной текст. 14.6 к фону */
+  --ink-2: #5a6169;       /* бетон, вторичный текст. 5.55 */
+  --line: #d8d8d3;        /* фаска */
+  --line-strong: #b9b9b2; /* фаска при наведении */
+  --accent: #1d3fbf;      /* индиго — только действия и выбор. 8.35 под белым текстом */
+  --accent-hover: #17339a;
+  --accent-ink: #ffffff;
+  --accent-tint: #edf0fc;  /* разбел индиго */
+  --warm: #b8791f;         /* охра — ТОЛЬКО подарки и акции, больше нигде */
+  --warm-tint: #fcf6ee;
+
+  /* Шов — базовая единица ритма */
+  --seam: 6px;
+  --s-1: var(--seam);
+  --s-2: calc(var(--seam) * 2);   /* 12 */
+  --s-3: calc(var(--seam) * 3);   /* 18 */
+  --s-4: calc(var(--seam) * 4);   /* 24 */
+  --s-6: calc(var(--seam) * 6);   /* 36 */
+  --s-8: calc(var(--seam) * 8);   /* 48 */
+
+  /* Типографика: одна суперсемья. Моноширинный — цифровой режим того же шрифта,
+     у Plex Sans и Plex Mono совпадают x-height, капитель и ширина цифры. */
+  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --t-hero: clamp(2.125rem, 1.5rem + 2.8vw, 3.75rem);  /* 34 → 60 */
+  --t-h2: clamp(1.625rem, 1.3rem + 1.5vw, 2.375rem);   /* 26 → 38 */
+  --t-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);     /* 20 → 24 */
+  --t-lead: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);   /* 17 → 20 */
+  --t-body: 1rem;                                       /* 16 */
+  --t-small: 0.875rem;                                  /* 14 */
+  --t-micro: 0.75rem;                                   /* 12 — пол, ниже нельзя */
+  --t-price: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);   /* 20 → 24 */
+  --t-price-card: 0.9375rem;                            /* 15 */
+
+  --measure: 62ch;
+  --page: 1440px;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --dur: 600ms;
+  --dur-fast: 150ms;
+}
+
+/* Брейкпоинты: ≤719 телефон (один столбец, швы сохраняются),
+   720–1023 планшет (6 колонок), ≥1024 полные 12 колонок. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+
+h1 { font-size: var(--t-hero); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; }
+h2 { font-size: var(--t-h2); font-weight: 600; line-height: 1.12; letter-spacing: -0.015em; }
+h3 { font-size: var(--t-h3); font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+
+p { margin: 0; max-width: var(--measure); }
+a { color: inherit; }
+img { max-width: 100%; height: auto; display: block; }
+
+/* Браузерные отступы у figure и dialog ломают раскладку: плитки перестают
+   примыкать друг к другу, и шов пропадает. */
+figure, dialog, ul, ol, dl, dd { margin: 0; }
+
+/* Классы вроде .btn задают display и перебивают атрибут hidden. */
+[hidden] { display: none !important; }
+
+/* Моноширинный — только для измеряемого: цена, метраж, класс, формат, номер шага.
+   Число как слово («14 дней») набирается основным шрифтом. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* Единица измерения — фиксированные 12px, а не доля от родителя:
+   иначе по странице расползаются дробные кегли вроде 9.8px. */
+.unit {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: var(--t-micro);
+  color: var(--ink-2);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(0.6875rem, 0.66rem + 0.1vw, 0.75rem);
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.phone { font-variant-numeric: tabular-nums; font-weight: 500; text-decoration: none; white-space: nowrap; }
+.muted { color: var(--ink-2); }
+.small { font-size: var(--t-small); line-height: 1.45; }
+.micro { font-size: var(--t-micro); line-height: 1.4; }
+
+/* Раскладка: блоки-«плитки», разделённые швами. Радиусов и теней нет — только фаска. */
+.layout {
+  display: grid;
+  gap: var(--seam);
+  grid-template-columns: repeat(12, 1fr);
+  max-width: var(--page);
+  margin-inline: auto;
+  padding-inline: var(--s-2);
+}
+
+.tile {
+  background: var(--surface);
+  padding: var(--s-4);
+  position: relative;
+  grid-column: span 12;
+}
+
+/* Фаска — внутренняя линия по краю, как на ламели. Заменяет тень. */
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--line);
+  pointer-events: none;
+}
+
+/* Форматы блоков — из выгрузки каталога: 600×1200 (476 позиций), 600×600 (412),
+   1200×600 (143), 200×1200 (67). Выдуманных пропорций не вводим. */
+@media (min-width: 720px) {
+  .tile--600x1200 { grid-column: span 6; aspect-ratio: 2 / 1; }
+  .tile--600x600  { grid-column: span 3; aspect-ratio: 1 / 1; }
+  .tile--200x1200 { grid-column: span 2; aspect-ratio: 1 / 6; }
+  .tile--half     { grid-column: span 6; }
+  .tile--third    { grid-column: span 4; }
+  .layout { padding-inline: var(--s-4); }
+}
+
+/* Секции: 48px между стыками при шве 6px — отношение 8:1.
+   Было 96px, и страница читалась как острова в сером море. */
+.section { padding-block: var(--s-4); }
+.section--tint { background: var(--tint, var(--bg-warm)); padding-block: var(--s-8); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-4);
+  min-height: 48px;
+  border: 0;
+  border-radius: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-size: var(--t-body);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  transition: background var(--dur-fast) var(--ease), transform 0.05s ease;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  pointer-events: none;
+}
+
+.btn:hover { background: var(--accent-hover); }
+.btn:active { transform: translateY(1px); }
+.btn--ghost { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn--ghost::after { display: none; }
+.btn--ghost:hover { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); }
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Плашка подарка: разбел охры + графитовый текст (15.4), охряная кромка. */
+.gift {
+  display: inline-block;
+  padding: var(--s-1) var(--s-2);
+  background: var(--warm-tint);
+  color: var(--ink);
+  border-left: 3px solid var(--warm);
+  font-size: var(--t-small);
+  font-weight: 500;
+}
+
+/* Элементы управления — БЕЛЫЕ плитки на сером поле, как и всё на странице.
+   Раньше они инвертировали правило (серая заливка, белый шов) и читались
+   как провалы — отсюда ощущение дешевизны. */
+.field { display: grid; gap: 4px; }
+
+.field__label {
+  font-size: var(--t-small);
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.field input {
+  min-height: 48px;
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+  font: inherit;
+  transition: box-shadow var(--dur-fast) var(--ease);
+}
+
+.field input:hover { box-shadow: inset 0 0 0 1px var(--line-strong); }
+.field input:focus { box-shadow: inset 0 0 0 2px var(--accent); outline: none; }
+
+.consent {
+  display: flex;
+  gap: var(--s-1);
+  align-items: flex-start;
+  font-size: var(--t-micro);
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+.consent input { margin-top: 2px; accent-color: var(--accent); }
+
+.channel { display: flex; gap: var(--seam); flex-wrap: wrap; }
+
+.channel__btn {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink-2);
+  font: inherit;
+  cursor: pointer;
+  transition: box-shadow var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.channel__btn:hover { box-shadow: inset 0 0 0 1px var(--line-strong); }
+.channel__btn.is-active { color: var(--ink); box-shadow: inset 0 0 0 2px var(--accent); }
+
+/* Укладка первого экрана: плитка приходит со своей стороны ряда и садится к шву.
+   Вертикальный fade-in — это «просто оживлённый сайт», мы обязаны быть выше. */
+@media (prefers-reduced-motion: no-preference) {
+  .lay-in {
+    animation: lay-in 0.45s var(--ease) backwards;
+  }
+
+  .lay-in:nth-child(odd) { --lay-from: -16px; }
+  .lay-in:nth-child(even) { --lay-from: 16px; }
+
+  @keyframes lay-in {
+    from { opacity: 0; transform: translateX(var(--lay-from, -16px)); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}

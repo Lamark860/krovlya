@@ -1,0 +1,84 @@
+---
+import { company } from "../data/company";
+---
+
+<header class="header">
+  <div class="header__inner">
+    <a class="header__brand" href="/">
+      <span class="header__mark" aria-hidden="true"></span>
+      {company.brand}
+    </a>
+
+    <div class="header__contacts">
+      <span class="header__showroom muted">{company.showroom.address}</span>
+      <a class="header__phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+      <a class="btn btn--ghost header__cta" href="#lead">Бесплатный замер</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .header__inner {
+    max-width: var(--page);
+    margin-inline: auto;
+    padding: var(--s-2) var(--s-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+  }
+
+  .header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+
+  /* Марка — четыре плитки со швом: та же раскладка, что и вся страница */
+  .header__mark {
+    width: 22px;
+    height: 22px;
+    background:
+      linear-gradient(var(--ink), var(--ink)) 0 0 / 10px 10px no-repeat,
+      linear-gradient(var(--ink), var(--ink)) 12px 0 / 10px 10px no-repeat,
+      linear-gradient(var(--ink), var(--ink)) 0 12px / 10px 10px no-repeat,
+      linear-gradient(var(--warm), var(--warm)) 12px 12px / 10px 10px no-repeat;
+  }
+
+  .header__contacts {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+  }
+
+  .header__phone {
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .header__showroom { font-size: var(--t-small); }
+
+  @media (max-width: 899px) {
+    .header__showroom { display: none; }
+  }
+
+  @media (max-width: 639px) {
+    .header__cta { display: none; }
+    .header__inner { padding-inline: var(--s-2); }
+  }
+</style>

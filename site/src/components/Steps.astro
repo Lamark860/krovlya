@@ -1,0 +1,54 @@
+---
+interface Props {
+  title: string;
+  steps: { title: string; text: string; free?: boolean }[];
+}
+
+const { title, steps } = Astro.props;
+---
+
+<section class="steps">
+  <div class="layout">
+    <div class="tile steps__intro">
+      <p class="eyebrow">от идеи до готового пола</p>
+      <h2>{title}</h2>
+      <p class="muted">Материал, замер, доставка и укладка — в одних руках. Не нужно искать бригаду отдельно.</p>
+    </div>
+
+    {steps.map((step, i) => (
+      <article class="tile steps__item">
+        <p class="steps__num num">{String(i + 1).padStart(2, "0")}</p>
+        <h3 class="steps__title">{step.title}</h3>
+        <p class="muted steps__text">{step.text}</p>
+        {step.free && <p class="gift steps__free">бесплатно</p>}
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .steps { padding-block: var(--s-4); background: var(--bg-warm); }
+  .steps__intro { grid-column: span 12; }
+
+  .steps__item {
+    grid-column: span 12;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-1);
+    min-height: 180px;
+  }
+
+  .steps__num { font-size: var(--t-h3); color: var(--ink-2); }
+  .steps__title { font-size: var(--t-h3); }
+  .steps__text { font-size: var(--t-small); }
+  .steps__free { margin-top: auto; align-self: flex-start; }
+
+  @media (min-width: 720px) {
+    .steps__item { grid-column: span 6; }
+  }
+
+  @media (min-width: 1024px) {
+    .steps__intro { grid-column: span 12; }
+    .steps__item { grid-column: span 4; }
+  }
+</style>

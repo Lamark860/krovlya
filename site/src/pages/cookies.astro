@@ -1,0 +1,45 @@
+---
+/**
+ * ЗАГЛУШКА. Финальный текст берём из открытых источников и сверяем с политикой
+ * конфиденциальности — оба документа должны называть одного оператора (блокер Б1).
+ */
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Base
+  title="Политика в отношении cookie — «Мой ремонт»"
+  description="Как сайт использует файлы cookie."
+>
+  <Header />
+
+  <main class="doc">
+    <div class="layout">
+      <div class="tile doc__box">
+        <p class="eyebrow">документ готовится</p>
+        <h1>Политика в отношении файлов cookie</h1>
+        <p class="muted">
+          Полный текст будет опубликован до запуска рекламы. Коротко о том, что происходит сейчас:
+        </p>
+        <p class="muted">
+          Сайт использует файлы cookie и системы веб-аналитики, чтобы понимать, какие страницы
+          и объявления приводят посетителей, и не показывать одно и то же окно дважды.
+          Данные обезличены и используются только для оценки эффективности рекламы.
+        </p>
+        <p class="muted">
+          Отключить cookie можно в настройках браузера — сайт продолжит работать,
+          но часть функций (например, запоминание уже показанных окон) станет недоступна.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .doc { padding-block: var(--s-4) var(--s-8); }
+  .doc__box { grid-column: span 12; padding: var(--s-8) var(--s-4); display: grid; gap: var(--s-2); }
+  .doc__box p { max-width: 68ch; }
+</style>

@@ -1,0 +1,35 @@
+---
+// Временный хаб: до подключения домена главная просто ведёт на посадочные.
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Base
+  title="Мой ремонт — отделочные материалы в Ижевске"
+  description="Плитка, керамогранит, ламинат и кварцвинил с укладкой под ключ. Бесплатный замер и расчёт."
+>
+  <Header />
+
+  <main class="hub">
+    <div class="layout">
+      <div class="tile hub__box">
+        <p class="eyebrow">посадочные страницы</p>
+        <h1>Мой ремонт</h1>
+        <p class="muted">Отделочные материалы с укладкой под ключ в Ижевске и Завьяловском районе.</p>
+        <p class="hub__links">
+          <a class="btn" href="/poly">Ламинат и кварцвинил</a>
+          <a class="btn btn--ghost" href="/plitka">Плитка и керамогранит — в работе</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  .hub { padding-block: var(--s-8); }
+  .hub__box { grid-column: span 12; padding: var(--s-8) var(--s-4); display: grid; gap: var(--s-2); }
+  .hub__links { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
+</style>

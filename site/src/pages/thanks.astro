@@ -1,0 +1,141 @@
+---
+/**
+ * Страница «Спасибо». По методике курса её задача — не поблагодарить,
+ * а утеплить человека между заявкой и звонком, чтобы он не остыл.
+ */
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { company } from "../data/company";
+---
+
+<Base
+  title="Заявка принята — «Мой ремонт»"
+  description="Заявка принята. Специалист свяжется с вами в течение 15 минут в рабочее время."
+>
+  <Header />
+
+  <main class="thanks">
+    <div class="layout">
+      <div class="tile thanks__box">
+        <p class="eyebrow">заявка принята</p>
+        <h1>Спасибо<span data-name></span>! Мы уже считаем</h1>
+        <p class="thanks__lead muted">
+          Специалист свяжется с вами <b data-channel>в Telegram</b> в течение 15 минут
+          в рабочее время: {company.showroom.hours}.
+        </p>
+
+        <div class="thanks__value">
+          <p class="thanks__value-title">Что входит в бесплатный замер</p>
+          <ul>
+            <li>Замер площади с раскладкой и подрезкой <s class="muted">1 500 ₽</s> <b>0 ₽</b></li>
+            <li>Проверка основания и перепадов уровня <s class="muted">800 ₽</s> <b>0 ₽</b></li>
+            <li>Смета на материал и работы одним документом <b>0 ₽</b></li>
+          </ul>
+        </div>
+
+        <p class="gift">Цена и подарок закреплены за вами на 14 дней</p>
+      </div>
+
+      <div class="tile thanks__side">
+        <h2 class="thanks__side-title">Пока ждёте звонка</h2>
+        <p class="muted">Посмотрите, как выглядят наши объекты и шоурум — там же можно потрогать материал вживую.</p>
+        <p class="thanks__links">
+          <a class="btn btn--ghost" href={company.vk} target="_blank" rel="noopener">Работы во ВКонтакте</a>
+        </p>
+        <p class="muted thanks__address">
+          Шоурум: {company.showroom.address}<br />{company.showroom.hours}
+        </p>
+      </div>
+
+      <div class="tile thanks__magnet" data-download hidden>
+        <p class="eyebrow">ваш файл готов</p>
+        <h2 class="thanks__side-title">Сравнение ламината и кварцвинила</h2>
+        <p class="muted">Ссылка действует 24 часа.</p>
+        <p><a class="btn" data-download-link href="#">Скачать PDF</a></p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
+
+<script>
+  const CHANNELS: Record<string, string> = {
+    telegram: "в Telegram",
+    max: "в MAX",
+    phone: "по телефону",
+  };
+
+  try {
+    const saved = JSON.parse(sessionStorage.getItem("lead") ?? "{}");
+    if (saved.name) {
+      const el = document.querySelector("[data-name]");
+      if (el) el.textContent = `, ${saved.name}`;
+    }
+    if (saved.channel) {
+      const el = document.querySelector("[data-channel]");
+      if (el) el.textContent = CHANNELS[saved.channel] ?? "в Telegram";
+    }
+    if (saved.download) {
+      const block = document.querySelector<HTMLElement>("[data-download]");
+      const link = document.querySelector<HTMLAnchorElement>("[data-download-link]");
+      if (block && link) {
+        link.href = saved.download;
+        block.hidden = false;
+      }
+    }
+  } catch {
+    // пустой sessionStorage — не повод ломать страницу
+  }
+</script>
+
+<style>
+  .thanks { padding-block: var(--s-4) var(--s-8); }
+
+  .thanks__box {
+    grid-column: span 12;
+    padding: var(--s-8) var(--s-4);
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .thanks__lead { font-size: var(--t-lead); }
+
+  .thanks__value {
+    margin-top: var(--s-4);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .thanks__value-title { font-weight: 500; margin-bottom: var(--s-2); }
+  .thanks__value ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); }
+
+  .thanks__value li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-1);
+    align-items: baseline;
+    font-size: var(--t-small);
+  }
+
+  .thanks__value b { font-family: var(--font-mono); color: var(--accent); }
+
+  .thanks__side,
+  .thanks__magnet {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-2);
+    align-content: start;
+  }
+
+  .thanks__side-title { font-size: var(--t-h3); }
+  .thanks__links { margin-top: var(--s-2); }
+  .thanks__address { font-size: var(--t-small); margin-top: auto; }
+
+  @media (min-width: 900px) {
+    .thanks__box { grid-column: span 7; }
+    .thanks__side { grid-column: span 5; }
+    .thanks__magnet { grid-column: span 5; }
+  }
+</style>
