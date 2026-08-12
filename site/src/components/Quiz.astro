@@ -134,8 +134,13 @@
 
   async function ensureData() {
     if (data) return data;
-    const response = await fetch("/data/quiz-poly.json");
-    data = await response.json();
+    try {
+      const response = await fetch("/data/quiz-poly.json");
+      if (!response.ok) return null;
+      data = await response.json();
+    } catch {
+      return null;   // сеть отвалилась — решает вызывающий, не роняем квиз
+    }
     return data;
   }
 
@@ -239,13 +244,33 @@
     advance();
   }
 
-  function advance() {
+  async function advance() {
     if (index < STEPS.length - 1) {
       index += 1;
       renderStep();
-    } else {
-      renderResult();
+      return;
     }
+
+    // Данные каталога тянутся лениво, а расчёт без них падает. Кто пройдёт квиз
+    // быстрее, чем приедут 62 КБ (мобильный интернет, холодный кэш), упирался
+    // в мёртвую кнопку: ошибка в консоли, на экране ничего.
+    const next = body.querySelector<HTMLButtonElement>("[data-next]");
+    if (!data && next) {
+      next.disabled = true;
+      next.textContent = "Считаем…";
+    }
+
+    if (!(await ensureData())) {
+      // Телефон берём из шапки: у скрипта нет доступа к данным компании,
+      // а дублировать номер в разметке — значит однажды забыть его обновить.
+      const tel = document.querySelector<HTMLAnchorElement>('a[href^="tel:"]');
+      body.innerHTML = `<p>Не получилось загрузить каталог — посчитаем вручную, это быстро.`
+        + (tel ? ` Позвоните: <a class="phone" href="${tel.href}">${tel.textContent!.trim()}</a>` : "")
+        + `</p>`;
+      return;
+    }
+
+    renderResult();
   }
 
   function plural(count: number, forms: [string, string, string]) {
