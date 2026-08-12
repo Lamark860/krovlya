@@ -32,9 +32,17 @@ export const company = {
   vk: "https://vk.ru/moiremont18",
 
   // Города для подстановки в заголовок по UTM. Ключ — значение параметра ?city=
+  /**
+   * Подстановка города по метке `?city=` из объявления.
+   * У каждого гео две формы: `phrase` идёт в заголовок («Пол под ключ в Ижевске»),
+   * `label` — в заявку. Раньше была одна строка на оба случая, и в CRM
+   * приезжал город «в Ижевске» — сортировать и группировать такое нечем.
+   */
   geo: {
-    default: "в Ижевске",
-    izhevsk: "в Ижевске",
-    zavyalovo: "в Завьяловском районе",
-  } as Record<string, string>,
+    default: "izhevsk",
+    cities: {
+      izhevsk: { phrase: "в Ижевске", label: "Ижевск" },
+      zavyalovo: { phrase: "в Завьяловском районе", label: "Завьяловский район" },
+    } as Record<string, { phrase: string; label: string }>,
+  },
 } as const;

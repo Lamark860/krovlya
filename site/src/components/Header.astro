@@ -1,5 +1,16 @@
 ---
 import { company } from "../data/company";
+
+interface Props {
+  /**
+   * Куда ведёт кнопка в шапке. По умолчанию — на форму посадочной, потому что
+   * форма есть только там: на «Спасибо», в политиках и на 404 якорь #lead
+   * никуда не вёл, и кнопка молча не работала.
+   */
+  cta?: string;
+}
+
+const { cta = "/poly#lead" } = Astro.props;
 ---
 
 <header class="header">
@@ -12,7 +23,7 @@ import { company } from "../data/company";
     <div class="header__contacts">
       <span class="header__showroom muted">{company.showroom.address}</span>
       <a class="header__phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>
-      <a class="btn btn--ghost header__cta" href="#lead">Бесплатный замер</a>
+      <a class="btn btn--ghost header__cta" href={cta}>Бесплатный замер</a>
     </div>
   </div>
 </header>

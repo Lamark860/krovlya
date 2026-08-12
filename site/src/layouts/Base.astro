@@ -38,12 +38,13 @@ const indexable = import.meta.env.PUBLIC_INDEXABLE === "1";
     <script is:inline define:vars={{ geo: company.geo }}>
       (() => {
         const key = new URLSearchParams(location.search).get("city");
-        const value = key && geo[key];
-        if (!value) return;
+        const city = key && geo.cities[key];
+        if (!city) return;
         document.documentElement.dataset.city = key;
         addEventListener("DOMContentLoaded", () => {
-          document.querySelectorAll("[data-geo]").forEach((el) => (el.textContent = value));
-          document.querySelectorAll("input[name=geo]").forEach((el) => (el.value = value));
+          // В заголовок — предложный падеж, в заявку — название города.
+          document.querySelectorAll("[data-geo]").forEach((el) => (el.textContent = city.phrase));
+          document.querySelectorAll("input[name=geo]").forEach((el) => (el.value = city.label));
         });
       })();
     </script>

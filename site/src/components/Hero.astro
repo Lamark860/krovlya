@@ -33,7 +33,7 @@ const short = (sample: Sample) =>
   <div class="layout">
     <div class="tile hero__text lay-in">
       <p class="eyebrow">{eyebrow}</p>
-      <h1>{title} <span data-geo>{company.geo.default}</span> {titleTail}</h1>
+      <h1>{title} <span data-geo>{company.geo.cities[company.geo.default].phrase}</span> {titleTail}</h1>
       <p class="hero__lead">{lead}</p>
 
       <div class="hero__actions">

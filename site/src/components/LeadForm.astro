@@ -38,12 +38,12 @@ const { id = "lead", title, lead, submit, magnet } = Astro.props;
         </label>
 
         <label class="field">
-          <span class="field__label" data-contact-label>Введите ваш телефон</span>
-          <input name="contact" required inputmode="tel" data-contact placeholder="+7 " />
+          <span class="field__label" data-contact-label>Введите телефон или @username в Telegram</span>
+          <input name="contact" required inputmode="tel" data-contact placeholder="+7 или @username" />
         </label>
 
         <input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <input type="hidden" name="geo" value={company.geo.default} />
+        <input type="hidden" name="geo" value={company.geo.cities[company.geo.default].label} />
 
         <label class="consent">
           <input type="checkbox" name="consent" required />
@@ -59,21 +59,32 @@ const { id = "lead", title, lead, submit, magnet } = Astro.props;
 
 <script>
   document.querySelectorAll<HTMLFormElement>("[data-lead]").forEach((form) => {
-    let channel = "telegram";
     const startedAt = Date.now();
     const contact = form.querySelector<HTMLInputElement>("[data-contact]")!;
     const label = form.querySelector<HTMLElement>("[data-contact-label]")!;
 
+    const HINTS: Record<string, [подпись: string, подсказка: string]> = {
+      telegram: ["Введите телефон или @username в Telegram", "+7 или @username"],
+      max: ["Введите номер телефона в MAX", "+7 "],
+      phone: ["Введите ваш телефон", "+7 "],
+    };
+
+    // Подпись поля выводится из активной кнопки, а не задаётся отдельно.
+    // Иначе они расходятся: выбран Telegram, а форма просит телефон —
+    // ровно это и было видно на первой загрузке страницы.
+    let channel = "telegram";
+    const select = (value: string) => {
+      channel = value;
+      form.querySelectorAll(".channel__btn").forEach((b) =>
+        b.classList.toggle("is-active", (b as HTMLButtonElement).dataset.channel === value));
+      [label.textContent, contact.placeholder] = HINTS[value];
+    };
+
     form.querySelectorAll<HTMLButtonElement>(".channel__btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        channel = button.dataset.channel!;
-        form.querySelectorAll(".channel__btn").forEach((b) => b.classList.remove("is-active"));
-        button.classList.add("is-active");
-        label.textContent = channel === "telegram"
-          ? "Введите телефон или @username в Telegram"
-          : channel === "max" ? "Введите номер телефона в MAX" : "Введите ваш телефон";
-      });
+      button.addEventListener("click", () => select(button.dataset.channel!));
     });
+
+    select(form.querySelector<HTMLButtonElement>(".channel__btn.is-active")?.dataset.channel ?? "telegram");
 
     // Мягкое форматирование: ничего не блокируем, шаблон в поле не подставляем
     contact.addEventListener("input", () => {

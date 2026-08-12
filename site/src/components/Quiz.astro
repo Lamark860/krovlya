@@ -271,7 +271,8 @@
   function renderResult() {
     const result = estimate();
     title.textContent = "Ваш предварительный расчёт";
-    progress.textContent = `${result.area} м² · подходит ${money(matching())} позиций`;
+    progress.textContent = `${result.area} м² · подходит ${money(matching())} `
+      + plural(matching(), ["позиция", "позиции", "позиций"]);
     back.hidden = true;
     counter.textContent = "";
 
@@ -332,10 +333,16 @@
     const contact = form.querySelector<HTMLInputElement>("[data-contact]")!;
     const label = form.querySelector<HTMLElement>("[data-contact-label]")!;
 
+    // Подпись и подсказка меняются вместе: иначе выбран Telegram,
+    // а поле подсказывает «+7 » — и человек не понимает, что можно дать @username.
     const setChannelLabel = () => {
-      label.textContent = answers.channel === "telegram"
-        ? "Введите телефон или @username в Telegram"
-        : answers.channel === "max" ? "Введите номер телефона в MAX" : "Введите ваш телефон";
+      const [подпись, подсказка] = answers.channel === "telegram"
+        ? ["Введите телефон или @username в Telegram", "+7 или @username"]
+        : answers.channel === "max"
+          ? ["Введите номер телефона в MAX", "+7 "]
+          : ["Введите ваш телефон", "+7 "];
+      label.textContent = подпись;
+      contact.placeholder = подсказка;
     };
 
     form.querySelectorAll<HTMLButtonElement>(".quiz__option").forEach((button) => {

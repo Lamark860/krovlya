@@ -4,6 +4,8 @@
  * на странице), показывается один раз за сессию, содержит лид-магнит с цифрой выгоды.
  * Никаких показов по скроллу и таймеру — только уход курсора за пределы окна.
  */
+import { company } from "../data/company";
+
 interface Props {
   title: string;
   lead: string;
@@ -43,6 +45,9 @@ const { title, lead, magnet, bullets } = Astro.props;
       </label>
 
       <input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <!-- Без этого поля заявка из попапа приезжала без города: скрипт форм
+           читает гео из самой формы, а не из страницы. -->
+      <input type="hidden" name="geo" value={company.geo.cities[company.geo.default].label} />
 
       <label class="consent">
         <input type="checkbox" name="consent" required />
