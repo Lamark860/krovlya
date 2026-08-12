@@ -389,6 +389,10 @@
       });
     });
 
+    // И сразу при отрисовке: в разметке подсказка задана телефонной,
+    // а канал по умолчанию — Telegram. Иначе они расходятся до первого клика.
+    setChannelLabel();
+
     function renderResultTotals() {
       const updated = estimate();
       const range = body.querySelector<HTMLElement>(".quiz__range")!;
