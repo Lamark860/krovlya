@@ -1,13 +1,22 @@
 # pipeline — выгрузка → каталог → YML-фиды
 
-Чистый Python 3, без внешних зависимостей. Два шага, запускаются из корня проекта.
+Чистый Python 3, без внешних зависимостей. Четыре шага, запускаются из корня проекта
+**в этом порядке**:
 
 ```bash
 python3 pipeline/build_catalog.py            # docs/catalog.csv → data/catalog.json
 python3 pipeline/build_feed.py               # data/catalog.json → data/feeds/*.yml
+python3 pipeline/build_showcase.py           # → витрина и данные квиза внутрь site/
+python3 pipeline/fetch_images.py             # фото товаров → WebP в site/public/showcase/
 ```
 
 Первый шаг можно запустить на другом файле: `python3 pipeline/build_catalog.py путь/к/выгрузке.csv`.
+
+Шаги 3 и 4 требуют друг друга: витрина ставит локальный путь к фото, только если файл
+уже скачан, а скачивает их последний шаг. Значит, при **первом** прогоне на новой выгрузке
+шаг 3 нужно повторить после шага 4 — иначе новые позиции останутся со ссылками на фото
+сайта магазина, и лендинг будет зависеть от того, жив ли сейчас чужой сайт.
+Для `fetch_images.py` нужен `cwebp` (`brew install webp`).
 
 ## Что делает шаг 1 (build_catalog.py)
 

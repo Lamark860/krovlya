@@ -20,9 +20,24 @@ CATALOG = ROOT / "data" / "catalog.json"
 OUT = ROOT / "site" / "src" / "data" / "showcase.json"
 # Данные счётчика грузятся лениво при открытии квиза, поэтому лежат в public/
 QUIZ_OUT = ROOT / "site" / "public" / "data" / "quiz-poly.json"
+# Сюда fetch_images.py складывает скачанные и пережатые фото.
+PHOTOS = ROOT / "site" / "public" / "showcase"
 
 PER_COLLECTION = 2   # не больше двух товаров одной коллекции в подборке
 SIZE = 4             # товаров в подборке
+
+
+def local_photo(item_id):
+    """Путь к нашему WebP, если он уже скачан, иначе None.
+
+    Раньше витрина всегда писала ссылку на фото сайта магазина, а подменял её
+    на локальную только fetch_images.py — следующим шагом. Стоило перегенерировать
+    витрину после него, и лендинг молча возвращался к чужим тяжёлым JPEG:
+    страница начинала зависеть от того, жив ли сейчас сайт магазина.
+    Правило именования файла повторяет safe_name() из fetch_images.py.
+    """
+    name = re.sub(r"[^A-Za-z0-9._-]+", "_", item_id).strip("_")[:80] + ".webp"
+    return f"/showcase/{name}" if (PHOTOS / name).exists() else None
 
 # Подборки. Условие — функция от товара; порядок задаёт порядок блоков на странице.
 SELECTIONS = {
@@ -173,7 +188,7 @@ def main():
                     "price": i["price"],
                     "unit": i["unit"],
                     "vendor": i["vendor"],
-                    "picture": i["pictures"][0],
+                    "picture": local_photo(i["id"]) or i["pictures"][0],
                     "params": {k: v for k, v in i["params"].items()
                                if k in ("Формат", "Класс", "Толщина, мм", "Коллекция", "Тёплый пол")},
                 } for i in chosen],
