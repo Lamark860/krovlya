@@ -8,7 +8,11 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+// Сборка идёт в format: "file", поэтому pathname здесь — «/poly.html».
+// Отдаётся же адрес без расширения, и canonical обязан указывать ровно на него,
+// иначе поисковик видит две версии страницы.
+const path = Astro.url.pathname.replace(/index\.html$/, "").replace(/\.html$/, "");
+const canonical = new URL(path, Astro.site);
 
 // Стенд закрыт от поиска: недоделанный лендинг клиента в выдаче — прямой вред.
 // Открывается одним флагом при выкатке на боевой домен (см. _local_docs/11_DEPLOY.md).
