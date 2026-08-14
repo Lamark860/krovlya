@@ -1,0 +1,22 @@
+---
+/**
+ * Служебные поля формы: ловушка для ботов, гео и источник заявки.
+ *
+ * Отдельным компонентом, потому что каждая форма обязана нести их сама.
+ * Скрипт форм читает гео из формы, а не со страницы — иначе на странице
+ * без основной формы (каталог, «Спасибо») заявка приезжает без города.
+ * Это уже ломалось дважды.
+ */
+import { defaultCity } from "../data/company";
+
+interface Props {
+  /** Добавить поле `source` — его заполняет попап «в 1 клик» */
+  source?: boolean;
+}
+
+const { source = false } = Astro.props;
+---
+
+<input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+<input type="hidden" name="geo" value={defaultCity.label} />
+{source && <input type="hidden" name="source" value="" />}

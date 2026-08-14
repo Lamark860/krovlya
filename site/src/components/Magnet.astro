@@ -1,0 +1,97 @@
+---
+/**
+ * Блок лид-магнита. По ТЗ (п. 13) стоит отдельным блоком чуть выше середины
+ * страницы — и на компе, и на телефоне.
+ *
+ * Тот же файл, что и в exit-попапе; попап остаётся, это разные точки входа:
+ * exit ловит уходящего, блок — того, кто читает и ещё не готов оставить номер
+ * ради замера. Форма по решению Артура (вопрос 39) простая: имя, телефон,
+ * согласие — открывается общим попапом «в 1 клик».
+ */
+interface Props {
+  title: string;
+  lead: string;
+  magnet: string;
+  bullets: string[];
+}
+
+const { title, lead, magnet, bullets } = Astro.props;
+---
+
+<section class="magnet section">
+  <div class="layout">
+    <div class="tile magnet__box">
+      <div class="magnet__text">
+        <p class="eyebrow">бесплатно, без звонка</p>
+        <h2>{title}</h2>
+        <p class="lead">{lead}</p>
+
+        <button
+          type="button"
+          class="btn btn--shine magnet__cta"
+          data-quick
+          data-quick-name
+          data-quick-title={title}
+          data-quick-lead="Пришлём файл на указанный контакт. Звонить без спроса не будем."
+          data-quick-submit="Получить файл"
+          data-quick-source="Лид-магнит: сравнение по 14 параметрам"
+          data-quick-magnet={magnet}
+        >
+          Скачать сравнение
+        </button>
+      </div>
+
+      <ol class="magnet__list">
+        {bullets.map((bullet) => <li>{bullet}</li>)}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .magnet__box {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-6) var(--s-4);
+  }
+
+  .magnet__text { display: grid; gap: var(--s-2); justify-items: start; }
+  .magnet__cta { margin-top: var(--s-1); }
+
+  /* Нумерация здесь по делу: это перечень параметров, а не список достоинств —
+     человеку важно, что их правда четырнадцать, и видно, сколько показано. */
+  .magnet__list {
+    display: grid;
+    gap: var(--s-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: param;
+    align-content: center;
+    font-size: var(--t-small);
+  }
+
+  .magnet__list li {
+    counter-increment: param;
+    position: relative;
+    padding-left: var(--s-6);
+    padding-block: var(--s-1);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .magnet__list li:last-child { border-bottom: 0; }
+
+  .magnet__list li::before {
+    content: counter(param, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+  }
+
+  @media (min-width: 900px) {
+    .magnet__box { grid-template-columns: 1fr 1fr; gap: var(--s-8); padding: var(--s-8); }
+  }
+</style>

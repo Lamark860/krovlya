@@ -1,0 +1,129 @@
+---
+/**
+ * «Скачайте прайс-лист в 1 клик». По ТЗ (п. 2 и 6) блок стоит дважды:
+ * сразу после обложки и ещё раз после товаров.
+ *
+ * Файл никуда не отправляется автоматически — по решению Артура (вопрос 29)
+ * менеджер высылает прайс руками на оставленный контакт. Поэтому здесь
+ * обычная заявка, а не выдача по токену: обещать мгновенную отправку нельзя,
+ * пока её никто не делает.
+ *
+ * Плашка «Обновлён» ставит сегодняшнюю дату на клиенте. На сборке дата
+ * замёрзла бы до следующего деплоя — а деплой может не случиться неделю.
+ */
+import Consent from "./Consent.astro";
+import FormHiddens from "./FormHiddens.astro";
+
+interface Props {
+  title: string;
+  lead?: string;
+  /** Показать кружок «Обновлён <дата>» — по ТЗ он у второго блока */
+  updated?: boolean;
+}
+
+const { title, lead, updated = false } = Astro.props;
+---
+
+<section class="price on-dark">
+  <div class="layout">
+    <div class="price__box">
+      <div class="price__text">
+        <h2 set:html={title} />
+        {lead && <p class="lead">{lead}</p>}
+      </div>
+
+      <form class="price__form" data-lead data-source="Запрос прайс-листа">
+        <label class="field price__field">
+          <span class="field__label">Куда отправить</span>
+          <select class="control price__select" name="channel">
+            <option value="telegram">Telegram</option>
+            <option value="max">MAX</option>
+            <option value="phone">Позвоните мне</option>
+          </select>
+        </label>
+
+        <label class="field price__field">
+          <span class="field__label" data-contact-label>Ваш номер телефона</span>
+          <input name="contact" required inputmode="tel" data-contact placeholder="+7 " />
+        </label>
+
+        <FormHiddens source />
+        <button class="btn btn--shine price__submit" type="submit">Скачать прайс-лист</button>
+
+        <div class="price__consent">
+          <Consent />
+        </div>
+        <p class="form-error" data-error hidden></p>
+      </form>
+    </div>
+
+    {updated && (
+      <p class="price__updated num">
+        <span>Обновлён</span>
+        <time data-today>сегодня</time>
+      </p>
+    )}
+  </div>
+</section>
+
+<script>
+  import "../scripts/leadForms";
+
+  // Дата ставится в браузере: собранная на билде, она врала бы до следующего деплоя.
+  const today = new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+  document.querySelectorAll("[data-today]").forEach((node) => {
+    node.textContent = today;
+    (node as HTMLTimeElement).dateTime = new Date().toISOString().slice(0, 10);
+  });
+
+  // Источник заявки в форме прайса задан на самой форме, а не скрытым полем
+  document.querySelectorAll<HTMLFormElement>("form[data-source]").forEach((form) => {
+    const field = form.querySelector<HTMLInputElement>("input[name=source]");
+    if (field) field.value = form.dataset.source!;
+  });
+</script>
+
+<style>
+  .price { padding-block: var(--s-6); }
+
+  .price__box {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-4);
+    align-items: center;
+  }
+
+  .price__text { display: grid; gap: var(--s-1); }
+  .price__form { display: grid; gap: var(--s-2); align-content: center; }
+  .price__field { min-width: 0; }
+
+  .price__select {
+    min-height: 48px;
+    padding: 0 var(--s-2);
+    cursor: pointer;
+  }
+
+  .price__consent { max-width: 46ch; }
+
+  .price__updated {
+    grid-column: span 12;
+    justify-self: end;
+    display: flex;
+    gap: var(--s-1);
+    align-items: baseline;
+    margin-top: var(--s-2);
+    padding: var(--s-1) var(--s-2);
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: var(--t-small);
+    font-weight: 500;
+  }
+
+  @media (min-width: 900px) {
+    .price__box { grid-template-columns: 1fr minmax(0, 420px); gap: var(--s-8); }
+    .price__form { grid-template-columns: 1fr 1fr; }
+    .price__submit,
+    .price__consent,
+    .price__form .form-error { grid-column: span 2; }
+  }
+</style>

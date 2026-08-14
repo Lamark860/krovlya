@@ -1,0 +1,91 @@
+---
+/**
+ * Оплата и доставка. По ТЗ (п. 8): визуал как у референса, содержание —
+ * со страницы оплаты moiremont18.ru.
+ *
+ * Рассрочки в списке нет намеренно: у референса она есть, у клиента — нет
+ * (проверено на moiremont18.ru/pages/payment, решение Артура — вопрос 32).
+ *
+ * «Бесплатная доставка» идёт со сноской. Реклама об акции обязана называть
+ * её условия и срок либо источник, где их узнать (ст. 9 ФЗ «О рекламе»);
+ * «бесплатно» без оговорок при праве магазина передумать — это претензия.
+ */
+import SectionIntro from "./SectionIntro.astro";
+import { company } from "../data/company";
+
+const delivery = [
+  "Бесплатная доставка по Ижевску*",
+  "Доставка по Удмуртии и России — считаем индивидуально",
+  "Самовывоз со склада",
+];
+
+const payment = [
+  "Наличными в магазине",
+  "Безналичная оплата по терминалу",
+  "Оплата по QR-коду",
+  "Банковской картой Visa, Mastercard или МИР через сайт",
+  "По реквизитам счёта, работаем с НДС",
+];
+---
+
+<section class="pay section">
+  <div class="layout">
+    <SectionIntro
+      eyebrow="доставка и оплата"
+      title="Бесплатная доставка* и оплата любым удобным способом"
+      lead="Материал привозим сами, платить можно как удобно — от наличных в кассе до счёта с НДС."
+    />
+
+    <div class="tile pay__col">
+      <h3 class="pay__title">Условия доставки</h3>
+      <ul class="pay__list">
+        {delivery.map((line) => <li>{line}</li>)}
+      </ul>
+    </div>
+
+    <div class="tile pay__col">
+      <h3 class="pay__title">Способы оплаты</h3>
+      <ul class="pay__list">
+        {payment.map((line) => <li>{line}</li>)}
+      </ul>
+    </div>
+
+    <p class="tile pay__note micro muted">
+      * Бесплатная доставка по Ижевску — акция магазина, действует до её отмены.
+      Магазин вправе изменить или прекратить акцию; условия на день заказа
+      уточняйте у менеджера по телефону <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>.
+      Доставка за пределы Ижевска рассчитывается отдельно.
+    </p>
+  </div>
+</section>
+
+<style>
+  .pay__col {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-2);
+    align-content: start;
+  }
+
+  .pay__title { font-size: var(--t-h3); }
+
+  .pay__list { display: grid; gap: var(--s-1); list-style: none; padding: 0; font-size: var(--t-small); }
+
+  .pay__list li { position: relative; padding-left: var(--s-3); }
+  .pay__list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+  }
+
+  .pay__note { grid-column: span 12; max-width: none; }
+  .pay__note a { font-weight: 500; }
+
+  @media (min-width: 720px) {
+    .pay__col { grid-column: span 6; }
+  }
+</style>

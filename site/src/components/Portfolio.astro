@@ -1,0 +1,196 @@
+---
+/**
+ * Портфолио объектов. Структура по ТЗ Артура от 14.08:
+ * 8 кейсов, у каждого — главное фото, лента миниатюр, характеристики объекта
+ * и кнопка «Хочу так же» (вместо «Смотреть подробнее» у референса).
+ * Кнопки «Перейти в портфолио» нет — все кейсы на месте.
+ *
+ * Фото пока не пришли: пустой `cover` рисуется заглушкой, лента миниатюр
+ * при пустом `shots` не выводится. Битых картинок на странице быть не должно.
+ */
+import portfolio from "../data/portfolio.json";
+import SectionIntro from "./SectionIntro.astro";
+
+const { cases, draft } = portfolio;
+---
+
+<section class="folio" id="portfolio">
+  <div class="layout">
+    <SectionIntro
+      eyebrow="наши объекты"
+      title="Пол под ключ: что получилось у клиентов"
+      lead="Материал со своего склада, укладка своей бригадой. Цена в кейсе — за квадратный метр вместе с работой, подложкой и плинтусом."
+    >
+      {draft && (
+        <p class="folio__draft">
+          Черновик блока: фото и цифры — примеры структуры, ждём материалы по реальным объектам.
+        </p>
+      )}
+    </SectionIntro>
+
+    {cases.map((item) => (
+      <article class="tile folio__case" data-case>
+        <div class="folio__cover">
+          {item.cover
+            ? <img src={item.cover} alt={item.title} loading="lazy" width="480" height="360" data-cover />
+            : <span class="folio__ph" data-cover-ph>фото объекта</span>}
+        </div>
+
+        {item.shots.length > 0 && (
+          <ul class="folio__shots">
+            {item.shots.map((shot: string, i: number) => (
+              <li>
+                <button type="button" class="folio__shot" data-shot={shot} aria-label={`Фото ${i + 1}`}>
+                  <img src={shot} alt="" loading="lazy" width="120" height="90" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div class="folio__body">
+          <h3 class="folio__title">{item.title}</h3>
+
+          <dl class="folio__specs">
+            {Object.entries(item.specs).map(([label, value]) => (
+              <div class="folio__row">
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <button
+            type="button"
+            class="btn folio__cta"
+            data-quick
+            data-quick-title="Хочу так же"
+            data-quick-lead="Перезвоним, посчитаем ваш метраж и назовём цену за метр вместе с укладкой."
+            data-quick-submit="Жду звонка"
+            data-quick-source={`Кейс: ${item.title}`}
+          >
+            Хочу так же
+          </button>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<script>
+  // Миниатюра меняет главное фото кейса. Делегирование — карточек восемь,
+  // и каждая может обзавестись своей лентой.
+  document.addEventListener("click", (event) => {
+    const shot = (event.target as HTMLElement).closest<HTMLElement>(".folio__shot");
+    if (!shot) return;
+
+    const card = shot.closest("[data-case]");
+    const cover = card?.querySelector<HTMLImageElement>("[data-cover]");
+    if (!cover) return;
+
+    const next = shot.dataset.shot!;
+    const previous = cover.src;
+    cover.src = next;
+    // Меняем местами, чтобы предыдущий кадр не пропадал из ленты
+    (shot.querySelector("img") as HTMLImageElement).src = previous;
+    shot.dataset.shot = previous;
+  });
+</script>
+
+<style>
+  .folio { padding-block: var(--s-4); }
+
+  .folio__draft {
+    margin-top: var(--s-2);
+    padding: var(--s-1) var(--s-2);
+    background: var(--accent-tint);
+    border-left: 3px solid var(--accent);
+    font-size: var(--t-small);
+  }
+
+  .folio__case {
+    grid-column: span 12;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .folio__cover { aspect-ratio: 4 / 3; background: var(--bg); }
+  .folio__cover img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Заглушка вместо фото: штриховка «под затирку», без единого файла */
+  .folio__ph {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      45deg,
+      var(--bg) 0 8px,
+      var(--surface) 8px 16px
+    );
+    color: var(--ink-2);
+    font-family: var(--font-num);
+    font-size: var(--t-micro);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .folio__shots {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    list-style: none;
+    padding: 0;
+  }
+
+  .folio__shot {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .folio__shot img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+
+  .folio__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    padding: var(--s-3) var(--s-2) var(--s-2);
+    flex: 1;
+  }
+
+  .folio__title { font-size: var(--t-h3); }
+
+  .folio__specs { display: grid; gap: 2px; font-size: var(--t-small); }
+
+  .folio__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+    gap: var(--s-2);
+    padding-block: 3px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .folio__row:last-child { border-bottom: 0; }
+  .folio__specs dt { color: var(--ink-2); }
+  .folio__specs dd { margin: 0; }
+
+  .folio__cta { margin-top: auto; width: 100%; }
+
+  @media (min-width: 720px) {
+    .folio__case { grid-column: span 6; }
+
+    /* Два ряда под заголовок: названия объектов разной длины, и без этого
+       характеристики соседних кейсов стоят на разной высоте. В один столбец
+       выравнивать не с чем — там это была бы просто дыра под заголовком. */
+    .folio__title { min-height: calc(var(--t-h3) * 1.2 * 2); }
+  }
+
+  @media (min-width: 1024px) {
+    .folio__case { grid-column: span 3; }
+  }
+</style>

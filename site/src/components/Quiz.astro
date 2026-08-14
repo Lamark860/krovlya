@@ -12,11 +12,22 @@
 
 <section class="quiz section" id="quiz">
   <div class="layout">
+    <div class="tile quiz__intro">
+      <p class="eyebrow">расчёт за 2 минуты · 5 вопросов</p>
+      <h2>Рассчитайте стоимость пола <span class="quiz__accent">и получите укладку в подарок</span></h2>
+      <p class="quiz__promise">
+        Приблизительную стоимость вы увидите сразу — <b>без отправки контактных данных</b>.
+      </p>
+    </div>
+
     <div class="tile quiz__box">
+      <div class="quiz__bar" role="progressbar" aria-label="Прогресс расчёта" data-quiz-bar-box>
+        <span class="quiz__bar-fill" data-quiz-bar></span>
+      </div>
+
       <header class="quiz__head">
-        <p class="eyebrow">расчёт за 2 минуты · 5 вопросов</p>
-        <h2 class="quiz__title" data-quiz-title>Мне нужен пол…</h2>
         <p class="quiz__progress num" data-quiz-progress>шаг 1 из 5</p>
+        <h3 class="quiz__title" data-quiz-title>Мне нужен пол…</h3>
       </header>
 
       <div class="quiz__body" data-quiz-body></div>
@@ -26,6 +37,17 @@
         <p class="quiz__counter num" data-quiz-counter aria-live="polite"></p>
       </footer>
     </div>
+
+    {/* Живой человек рядом с расчётом: обещание «поможем выбрать» с лицом
+        читается как чьё-то, а не как строчка в вёрстке. */}
+    <aside class="tile quiz__person">
+      <img src="/img/manager.webp" alt="Менеджер-консультант «Мой ремонт»" loading="lazy" width="700" height="1073" />
+      <p class="quiz__badge"><span class="quiz__dot" aria-hidden="true"></span> Онлайн</p>
+      <p class="quiz__person-text small muted">
+        Считаем материал по ценам каталога, а не «в среднем по рынку».
+        Если ответ неочевиден — выберите «не знаю», уточним на замере.
+      </p>
+    </aside>
   </div>
 </section>
 
@@ -131,6 +153,17 @@
   const progress = box.querySelector<HTMLElement>("[data-quiz-progress]")!;
   const counter = box.querySelector<HTMLElement>("[data-quiz-counter]")!;
   const back = box.querySelector<HTMLButtonElement>("[data-quiz-back]")!;
+  const bar = box.querySelector<HTMLElement>("[data-quiz-bar]")!;
+  const barBox = box.querySelector<HTMLElement>("[data-quiz-bar-box]")!;
+
+  /** Прогресс-бар: доля от 0 до 1. Дублируем в aria — полоска без числа
+      ничего не говорит скринридеру. */
+  function setBar(share: number) {
+    const percent = Math.round(share * 100);
+    bar.style.width = `${percent}%`;
+    barBox.setAttribute("aria-valuenow", String(percent));
+    barBox.setAttribute("aria-valuetext", `пройдено ${percent} процентов`);
+  }
 
   async function ensureData() {
     if (data) return data;
@@ -200,7 +233,7 @@
 
   function optionMarkup(option: { value: string; label: string; note?: string }, active: boolean) {
     return `
-      <button class="quiz__option${active ? " is-active" : ""}" data-value="${option.value}">
+      <button type="button" class="control quiz__option${active ? " is-active" : ""}" data-value="${option.value}">
         <span class="quiz__option-label">${option.label}</span>
         ${option.note ? `<span class="quiz__option-note muted">${option.note}</span>` : ""}
       </button>`;
@@ -210,6 +243,7 @@
     const step = STEPS[index];
     title.textContent = step.title;
     progress.textContent = `шаг ${index + 1} из ${STEPS.length}`;
+    setBar((index + 1) / STEPS.length);
     back.hidden = index === 0;
 
     const selected = answers[step.id];
@@ -298,6 +332,7 @@
     title.textContent = "Ваш предварительный расчёт";
     progress.textContent = `${result.area} м² · подходит ${money(matching())} `
       + plural(matching(), ["позиция", "позиции", "позиций"]);
+    setBar(1);
     back.hidden = true;
     counter.textContent = "";
 
@@ -476,6 +511,20 @@
 </script>
 
 <style is:global>
+  .quiz__intro { grid-column: span 12; display: grid; gap: var(--s-1); justify-items: start; }
+  .quiz__accent { color: var(--accent-hover); }
+
+  /* Обещание «без отправки контактов» — единственная строка на странице,
+     которую человек должен прочитать до того, как начнёт отвечать. */
+  .quiz__promise {
+    margin-top: var(--s-1);
+    padding: var(--s-1) var(--s-2);
+    background: var(--accent-tint);
+    border-left: 3px solid var(--accent);
+    font-size: var(--t-lead);
+    font-family: var(--font-display);
+  }
+
   .quiz__box {
     grid-column: span 12;
     padding: var(--s-4);
@@ -483,6 +532,47 @@
     flex-direction: column;
     gap: var(--s-4);
   }
+
+  .quiz__bar {
+    height: 6px;
+    background: var(--bg);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .quiz__bar-fill {
+    display: block;
+    height: 100%;
+    width: 20%;
+    background: var(--accent);
+    transition: width var(--dur-fast) var(--ease);
+  }
+
+  .quiz__person {
+    grid-column: span 12;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-2);
+    padding: var(--s-4);
+  }
+
+  .quiz__person img { max-height: 260px; width: auto; }
+
+  .quiz__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-1);
+    padding: 2px var(--s-2);
+    background: #1e9e5a;
+    color: #fff;
+    font-size: var(--t-micro);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .quiz__dot { width: 7px; height: 7px; background: #fff; border-radius: 50%; }
+  .quiz__person-text { text-align: center; }
 
   .quiz__progress {
     font-size: 0.8125rem;
@@ -505,8 +595,9 @@
     padding: var(--seam);
   }
 
-  /* Вариант ответа — белая плитка на сером поле, как и всё на странице.
-     Инверсия (серая плитка, белый шов) читается как провал и брак. */
+  /* Фаска, ховер и выбранное состояние — из общего класса `.control`
+     в tokens.css, тот же, что у полей ввода и кнопок канала.
+     Здесь только раскладка варианта. */
   .quiz__option {
     position: relative;
     display: flex;
@@ -517,18 +608,8 @@
     padding: var(--s-2) var(--s-2);
     min-height: 72px;
     justify-content: center;
-    border: 0;
-    border-radius: 0;
-    background: var(--surface);
-    box-shadow: inset 0 0 0 1px var(--line);
-    color: var(--ink);
-    font: inherit;
     cursor: pointer;
-    transition: box-shadow var(--dur-fast) var(--ease);
   }
-
-  .quiz__option:hover { box-shadow: inset 0 0 0 1px var(--line-strong); }
-  .quiz__option.is-active { box-shadow: inset 0 0 0 2px var(--accent); }
 
   .quiz__option-label { font-weight: 500; line-height: 1.3; }
   .quiz__option-note { font-size: var(--t-small); line-height: 1.35; }
@@ -549,7 +630,7 @@
   .quiz__counter { font-size: var(--t-small); font-weight: 400; color: var(--ink-2); }
 
   .quiz__range {
-    font-family: var(--font-mono);
+    font-family: var(--font-num);
     font-variant-numeric: tabular-nums;
     font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.25rem);
     font-weight: 500;
@@ -579,16 +660,17 @@
   .quiz__fieldset legend { padding: 0; margin-bottom: var(--s-1); }
 
   .quiz__form { display: grid; gap: var(--s-2); }
-  .quiz__error { color: #b00020; }
+  .quiz__error { color: var(--danger); }
 
   @media (min-width: 560px) {
     .quiz__options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
   @media (min-width: 900px) {
-    .quiz__options { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .quiz__options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .quiz__options--compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .quiz__result { display: grid; grid-template-columns: 5fr 7fr; gap: var(--s-8); }
-    .quiz__box { padding: var(--s-8); }
+    .quiz__box { grid-column: span 9; padding: var(--s-6); }
+    .quiz__person { grid-column: span 3; display: flex; }
   }
 </style>

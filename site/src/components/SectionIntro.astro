@@ -1,0 +1,33 @@
+---
+/**
+ * Шапка секции: верхний подзаголовок, заголовок, подзаголовок под ним.
+ * Была скопирована в пяти компонентах — вместе с правилом `grid-column: span 12`,
+ * так что отступы и кегль расходились от секции к секции.
+ *
+ * Заголовки по ТЗ выравниваются по левому краю, поэтому плитка занимает
+ * всю ширину сетки, а не центрируется коробкой посередине.
+ */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+}
+
+const { eyebrow, title, lead } = Astro.props;
+---
+
+<div class="tile section-intro">
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <h2>{title}</h2>
+  {lead && <p class="lead">{lead}</p>}
+  <slot />
+</div>
+
+<style>
+  .section-intro {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-1);
+    justify-items: start;
+  }
+</style>

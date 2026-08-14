@@ -1,0 +1,234 @@
+---
+/**
+ * Каталог напольных покрытий. По ТЗ (п. 5): отдельная страница, наверху —
+ * главный оффер с обложки, таб-меню по видам покрытия и по брендам,
+ * в конце — блок, ведущий на квиз.
+ *
+ * Карточки рисует скрипт из /data/catalog-poly.json: позиций 2 324, и в статике
+ * это мегабайты разметки ради двадцати видимых карточек. Данные готовит
+ * pipeline/build_catalog_page.py.
+ *
+ * Отдельных страниц товара пока нет — карточка ведёт в магазин, а заявка
+ * собирается попапом «в 1 клик». Это открытый вопрос 28: от него зависит,
+ * куда указывают ссылки в YML-фиде.
+ */
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import QuickForm from "../components/QuickForm.astro";
+import SectionIntro from "../components/SectionIntro.astro";
+import { company } from "../data/company";
+---
+
+<Base
+  title="Каталог ламината и кварцвинила в Ижевске — «Мой ремонт»"
+  description="2 324 напольных покрытия в наличии и под заказ: ламинат, кварцвинил, SPC. Укладка в подарок при заказе от 30 м²."
+>
+  <Header cta="/poly#lead" />
+
+  <main>
+    <section class="offer on-dark">
+      <div class="layout">
+        <div class="offer__box">
+          <p class="eyebrow">ламинат · кварцвинил · SPC</p>
+          <h1>Выберите напольное покрытие <span class="offer__accent">и получите укладку в подарок</span></h1>
+          <p class="lead">
+            Укладка напольных покрытий в подарок при заказе от 30 м².
+            Замер, расчёт и консультация — бесплатно.
+          </p>
+          <p class="offer__actions">
+            <a class="btn" href="/poly#quiz">Рассчитать стоимость — 2 минуты</a>
+            <a class="btn btn--ghost" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cat">
+      <div class="layout">
+        <div class="tile cat__filters">
+          <div class="cat__row">
+            <p class="cat__label eyebrow">вид покрытия</p>
+            <div class="cat__tabs" role="group" aria-label="Вид покрытия" data-tabs="group">
+              <button type="button" class="control cat__tab is-active" data-value="">Все</button>
+            </div>
+          </div>
+
+          <div class="cat__row">
+            <p class="cat__label eyebrow">бренд</p>
+            <div class="cat__tabs" role="group" aria-label="Бренд" data-tabs="brand">
+              <button type="button" class="control cat__tab is-active" data-value="">Все</button>
+            </div>
+          </div>
+
+          <p class="cat__count num muted" data-count aria-live="polite">Загружаем каталог…</p>
+        </div>
+
+        <div class="cat__grid" data-grid></div>
+
+        <p class="cat__more">
+          <button type="button" class="btn btn--ghost" data-more hidden>Показать ещё</button>
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="layout">
+        <SectionIntro
+          eyebrow="бесплатно и быстро"
+          title="Не хотите листать каталог?"
+          lead="Ответьте на пять вопросов — покажем подходящие покрытия и посчитаем стоимость пола вместе с работой. Контакты для расчёта не нужны."
+        >
+          <a class="btn btn--shine" href="/poly#quiz">Рассчитать стоимость</a>
+        </SectionIntro>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+  <QuickForm />
+</Base>
+
+<script>
+  import { strikePrice } from "../lib/pricing";
+
+  type Item = { n: string; u: string; p: number; e: string; v: string; g: string; s: string; i: string };
+  const PAGE = 24;
+
+  const grid = document.querySelector<HTMLElement>("[data-grid]")!;
+  const count = document.querySelector<HTMLElement>("[data-count]")!;
+  const more = document.querySelector<HTMLButtonElement>("[data-more]")!;
+
+  let items: Item[] = [];
+  let shown = 0;
+  const filters = { group: "", brand: "" };
+
+  const money = (value: number) => value.toLocaleString("ru-RU");
+  const plural = (n: number, forms: [string, string, string]) => {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod10 === 1 && mod100 !== 11) return forms[0];
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return forms[1];
+    return forms[2];
+  };
+
+  function visible() {
+    return items.filter((item) =>
+      (!filters.group || item.g === filters.group) &&
+      (!filters.brand || item.v === filters.brand));
+  }
+
+  function card(item: Item) {
+    const meta = [item.v, item.s].filter(Boolean).join(" · ");
+    const unit = item.e ? `₽/${item.e}` : "₽";
+    return `
+      <article class="tile card">
+        <a class="card__link" href="${item.u}" target="_blank" rel="noopener">
+          <img src="${item.i}" alt="${item.n.replace(/"/g, "&quot;")}" loading="lazy" width="450" height="450" />
+          <h3 class="card__name">${item.n}</h3>
+        </a>
+        <p class="card__meta">${meta}</p>
+        <p class="card__price num">${money(item.p)} <span class="unit">${unit}</span>
+          <s class="card__old num">${money(strikePrice(item.n, item.p))}</s></p>
+        <button type="button" class="btn card__buy"
+                data-quick
+                data-quick-title="Купить в 1 клик"
+                data-quick-lead="Перезвоним как можно скорее и уточним детали заказа."
+                data-quick-submit="Заказать сейчас"
+                data-quick-source="${item.n.replace(/"/g, "&quot;")}">Купить в 1 клик</button>
+      </article>`;
+  }
+
+  function render(reset = false) {
+    const list = visible();
+    if (reset) { grid.innerHTML = ""; shown = 0; }
+
+    const next = list.slice(shown, shown + PAGE);
+    grid.insertAdjacentHTML("beforeend", next.map(card).join(""));
+    shown += next.length;
+
+    count.textContent = `${money(list.length)} ${plural(list.length, ["позиция", "позиции", "позиций"])} · показано ${shown}`;
+    more.hidden = shown >= list.length;
+  }
+
+  function tabs(name: "group" | "brand", values: string[]) {
+    const holder = document.querySelector<HTMLElement>(`[data-tabs="${name}"]`)!;
+    holder.insertAdjacentHTML("beforeend", values.map((value) =>
+      `<button type="button" class="control cat__tab" data-value="${value}">${value}</button>`).join(""));
+
+    holder.addEventListener("click", (event) => {
+      const tab = (event.target as HTMLElement).closest<HTMLButtonElement>(".cat__tab");
+      if (!tab) return;
+      holder.querySelectorAll(".cat__tab").forEach((b) => b.classList.toggle("is-active", b === tab));
+      filters[name] = tab.dataset.value ?? "";
+      render(true);
+      // Возвращаем к началу списка: иначе после фильтра человек стоит
+      // в середине уже другой выдачи и думает, что ничего не изменилось.
+      document.querySelector(".cat")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  more.addEventListener("click", () => render());
+
+  fetch("/data/catalog-poly.json")
+    .then((response) => {
+      if (!response.ok) throw new Error(String(response.status));
+      return response.json();
+    })
+    .then((data: { items: Item[]; groups: string[]; brands: string[] }) => {
+      items = data.items;
+      tabs("group", data.groups);
+      tabs("brand", data.brands);
+      render(true);
+    })
+    .catch(() => {
+      // Пустая страница вместо каталога — потерянный оплаченный переход.
+      // Телефон берём из шапки, чтобы не держать вторую копию номера.
+      const phone = document.querySelector<HTMLAnchorElement>('a[href^="tel:"]');
+      count.textContent = "";
+      grid.innerHTML = `<p class="tile cat__fail">Каталог не загрузился — обновите страницу.
+        Или позвоните, подберём покрытие и назовём цену:
+        ${phone ? `<a class="phone" href="${phone.href}">${phone.textContent!.trim()}</a>` : ""}</p>`;
+    });
+</script>
+
+<style>
+  .offer { padding-block: var(--s-8); }
+  .offer__box { grid-column: span 12; display: grid; gap: var(--s-2); justify-items: start; }
+  .offer__accent { color: var(--accent); }
+  .offer__actions { display: flex; flex-wrap: wrap; gap: var(--seam); margin-top: var(--s-2); max-width: none; }
+
+  .cat { padding-block: var(--s-4); }
+
+  .cat__filters {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .cat__row { display: grid; gap: var(--s-1); }
+  .cat__label { margin: 0; }
+  .cat__tabs { display: flex; flex-wrap: wrap; gap: var(--seam); }
+
+  .cat__tab {
+    min-height: 40px;
+    padding: 0 var(--s-2);
+    cursor: pointer;
+    font-size: var(--t-small);
+    color: var(--ink-2);
+  }
+
+  .cat__count { font-size: var(--t-small); }
+
+  /* Те же 12 колонок, что у .layout, — тогда карточка кладётся по общему
+     правилу из tokens.css (2 в ряд на телефоне, 4 на десктопе) и не требует
+     собственной раскладки. */
+  .cat__grid {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--seam);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .cat__more { grid-column: span 12; max-width: none; display: flex; justify-content: center; }
+  .cat__fail { grid-column: span 12; padding: var(--s-4); }
+</style>

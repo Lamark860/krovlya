@@ -1,14 +1,16 @@
 ---
+/**
+ * Обложка. По ТЗ (п. 1): затемнённое фото на весь экран — ровно один экран
+ * и на компе, и на телефоне.
+ *
+ * Высоту считаем в `svh`, а не `vh`: на телефоне `100vh` больше видимой области
+ * на высоту адресной строки, и нижний край обложки уезжает под неё. Шапка липкая,
+ * поэтому её высоту вычитаем — иначе «один экран» получается с прокруткой.
+ *
+ * Фото — `/img/cover-floor.webp`, лежит у нас. Источник и ответственность
+ * за использование — решение заказчика от 14.08, вопрос 26 в 12_TZ_PRAVKI.md.
+ */
 import { company } from "../data/company";
-
-interface Sample {
-  picture: string;
-  name: string;
-  vendor: string;
-  price: number;
-  unit: string;
-  params?: Record<string, string>;
-}
 
 interface Props {
   eyebrow: string;
@@ -17,24 +19,23 @@ interface Props {
   lead: string;
   gift: string;
   facts: { value: string; label: string }[];
-  samples: Sample[];
+  cover?: string;
 }
 
-const { eyebrow, title, titleTail, lead, gift, facts, samples } = Astro.props;
-const money = (value: number) => value.toLocaleString("ru-RU");
-
-// Короткое имя коллекции: полные названия из каталога («Ламинат Classen (Германия)
-// VisioGrande 8/32 4V Шифер Эстрик белый») под образцом не читаются.
-const short = (sample: Sample) =>
-  sample.params?.["Коллекция"] || sample.name.split(/[,(]/)[0].replace(/^(Ламинат|SPC|Кварцвинил)\s+/i, "").trim();
+const {
+  eyebrow, title, titleTail, lead, gift, facts,
+  cover = "/img/cover-floor.webp",
+} = Astro.props;
 ---
 
-<section class="hero">
-  <div class="layout">
-    <div class="tile hero__text lay-in">
+<section class="hero on-dark">
+  <img class="hero__bg" src={cover} alt="" fetchpriority="high" width="2000" height="1500" />
+
+  <div class="layout hero__layout">
+    <div class="hero__text">
       <p class="eyebrow">{eyebrow}</p>
       <h1>{title} <span data-geo>{company.geo.cities[company.geo.default].phrase}</span> {titleTail}</h1>
-      <p class="hero__lead">{lead}</p>
+      <p class="lead hero__lead">{lead}</p>
 
       <div class="hero__actions">
         <a class="btn" href="#quiz">Рассчитать стоимость — 2 минуты</a>
@@ -42,79 +43,69 @@ const short = (sample: Sample) =>
       </div>
 
       <p class="gift hero__gift">{gift}</p>
-
-      <dl class="hero__facts">
-        {facts.map((fact) => (
-          <div class="hero__fact">
-            <dt class="hero__fact-value num">{fact.value}</dt>
-            <dd class="hero__fact-label muted">{fact.label}</dd>
-          </div>
-        ))}
-      </dl>
     </div>
 
-    {/* Выкладка образцов: плитки укладываются рядом со швом, у каждой — цена.
-        Без подписей это был просто набор текстур, по которому не считывается смысл. */}
-    {samples.map((sample, index) => (
-      <figure class="tile hero__sample lay-in" style={`animation-delay: ${(index + 1) * 70}ms`}>
-        <img
-          src={sample.picture}
-          alt={sample.name}
-          loading={index === 0 ? "eager" : "lazy"}
-          width="450"
-          height="450"
-        />
-        <figcaption class="hero__caption">
-          <span class="hero__sample-name">{short(sample)}</span>
-          <span class="hero__sample-meta muted">
-            {[sample.vendor, sample.params?.["Класс"] && `${sample.params["Класс"]} класс`]
-              .filter(Boolean).join(" · ")}
-          </span>
-          <span class="hero__sample-price num">
-            {money(sample.price)} <span class="unit">₽/{sample.unit || "м²"}</span>
-          </span>
-
-          {/* Доборный элемент: остаток ряда закрывается паспортом материала,
-              а не воздухом — как подрезанной плиткой в настоящей укладке. */}
-          {index === 0 && (
-            <dl class="hero__passport">
-              {[
-                ["Формат", sample.params?.["Формат"]],
-                ["Толщина", sample.params?.["Толщина, мм"] && `${sample.params["Толщина, мм"]} мм`],
-                ["В упаковке", sample.params?.["В упаковке, м²"] && `${sample.params["В упаковке, м²"]} м²`],
-                ["Тёплый пол", sample.params?.["Тёплый пол"]],
-              ].filter(([, value]) => value).map(([key, value]) => (
-                <div class="hero__passport-row">
-                  <dt class="muted">{key}</dt>
-                  <dd class="num hero__passport-value">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-        </figcaption>
-      </figure>
-    ))}
+    <dl class="hero__facts">
+      {facts.map((fact) => (
+        <div class="hero__fact">
+          <dt class="hero__fact-value num">{fact.value}</dt>
+          <dd class="hero__fact-label">{fact.label}</dd>
+        </div>
+      ))}
+    </dl>
   </div>
 </section>
 
 <style>
-  .hero { padding-block: var(--s-4) var(--s-8); }
+  .hero {
+    position: relative;
+    min-height: calc(100svh - var(--header-h));
+    display: grid;
+    /* Одна строка на всю высоту: тогда раскладка внутри может развести
+       текст и цифры по краям экрана, а не собрать их в середине. */
+    grid-auto-rows: 1fr;
+    padding-block: var(--s-8);
+    overflow: hidden;
+  }
+
+  /* Фото отдельным <img>, а не background-image: так браузер грузит его
+     с высоким приоритетом и учитывает в LCP, а не откладывает до разбора CSS. */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  /* Затемнение по ТЗ. Градиент, а не ровная заливка: текст слева должен
+     читаться, а правая часть фотографии — оставаться фотографией. */
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, rgb(9 37 50 / 0.92) 0%, rgb(9 37 50 / 0.78) 45%, rgb(9 37 50 / 0.45) 100%);
+    z-index: 0;
+  }
+
+  .hero__layout {
+    position: relative;
+    z-index: 1;
+    align-content: space-between;
+    row-gap: var(--s-8);
+  }
 
   .hero__text {
     grid-column: span 12;
     display: flex;
     flex-direction: column;
     gap: var(--s-2);
-    padding: var(--s-8) var(--s-4);
+    align-items: flex-start;
   }
 
   .hero__text h1 { max-width: 18ch; }
-
-  .hero__lead {
-    font-size: var(--t-lead);
-    color: var(--ink-2);
-    max-width: 46ch;
-  }
+  .hero__lead { max-width: 46ch; }
 
   .hero__actions {
     display: flex;
@@ -123,84 +114,27 @@ const short = (sample: Sample) =>
     margin-top: var(--s-2);
   }
 
-  .hero__gift { align-self: flex-start; }
+  .hero__gift { margin-top: var(--s-1); }
 
   .hero__facts {
+    grid-column: span 12;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-4) var(--s-2);
-    margin: var(--s-4) 0 0;
+    margin: 0;
     padding-top: var(--s-4);
     border-top: 1px solid var(--line);
   }
 
   .hero__fact-value { font-size: 1.5rem; font-weight: 500; line-height: 1.1; }
-  .hero__fact-label { font-size: var(--t-small); margin: 2px 0 0; }
-
-  .hero__sample {
-    grid-column: span 6;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .hero__sample img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-  }
-
-  .hero__caption {
-    display: grid;
-    gap: 2px;
-    padding: var(--s-2);
-    margin-top: auto;
-  }
-
-  .hero__sample-name { font-size: var(--t-small); font-weight: 500; line-height: 1.35; }
-  .hero__sample-meta { font-size: var(--t-micro); }
-  .hero__sample-price { font-size: var(--t-price-card); margin-top: var(--s-1); }
-
-  .hero__passport {
-    display: none;
-    margin-top: var(--s-2);
-    padding-top: var(--s-2);
-    border-top: 1px solid var(--line);
-  }
-
-  .hero__passport-row {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--s-2);
-    padding-block: 3px;
-    font-size: var(--t-micro);
-  }
-
-  .hero__passport-value { font-size: var(--t-micro); font-weight: 400; }
+  .hero__fact-label { font-size: var(--t-small); color: var(--ink-2); margin: 2px 0 0; }
 
   @media (min-width: 720px) {
-    .hero__text { grid-column: span 12; }
-    .hero__sample { grid-column: span 3; }
     .hero__facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   @media (min-width: 1024px) {
-    .hero { padding-block: var(--s-2) var(--s-4); }
-
-    /* 8+4 сверху и 4+4+4 снизу: шов на восьмой колонке проходит через оба ряда.
-       При 7+5 швы расходились на 116 px, и раскладка не читалась. */
+    .hero { padding-block: var(--s-8) var(--s-6); }
     .hero__text { grid-column: span 8; }
-
-    /* Крупный образец справа: картинка забирает высоту, а остаток ряда закрывает
-       паспорт материала — плитка тянется по ряду, контент за ней не поспевает. */
-    .hero__sample:first-of-type { grid-column: span 4; }
-    .hero__sample:first-of-type img { flex: 1; min-height: 0; aspect-ratio: auto; }
-    .hero__sample:first-of-type .hero__passport { display: block; }
-
-    /* Три образца в ряд под текстом — полоса выкладки */
-    .hero__sample:not(:first-of-type) {
-      grid-column: span 4;
-    }
-    .hero__sample:not(:first-of-type) img { aspect-ratio: 3 / 2; }
   }
 </style>

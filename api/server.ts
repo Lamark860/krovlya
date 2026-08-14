@@ -44,9 +44,17 @@ db.exec(`
   );
 `);
 
+/**
+ * Догоняем схему на живой базе: CREATE TABLE IF NOT EXISTS новые колонки
+ * не добавляет, а база на сервере уже с заявками.
+ */
+const columns = (db.query("PRAGMA table_info(leads)").all() as { name: string }[])
+  .map((c) => c.name);
+if (!columns.includes("source")) db.exec("ALTER TABLE leads ADD COLUMN source TEXT");
+
 const insertLead = db.query(`
-  INSERT INTO leads (created_at, name, contact, channel, page, geo, magnet, quiz, utm, ip)
-  VALUES ($created_at, $name, $contact, $channel, $page, $geo, $magnet, $quiz, $utm, $ip)
+  INSERT INTO leads (created_at, name, contact, channel, page, geo, source, magnet, quiz, utm, ip)
+  VALUES ($created_at, $name, $contact, $channel, $page, $geo, $source, $magnet, $quiz, $utm, $ip)
   RETURNING id
 `);
 const markDelivered = db.query("UPDATE leads SET delivered = 1 WHERE id = ?");
@@ -77,7 +85,8 @@ function validate(body: Record<string, unknown>): string | null {
   if (String(body.company ?? "")) return "spam";              // honeypot
   if (Number(body.elapsed ?? 0) < MIN_FILL_MS) return "spam"; // слишком быстро
   if (body.consent !== true) return "Нужно согласие на обработку данных";
-  if (name.length < 2 || name.length > 60) return "Проверьте имя";
+  // Имя необязательно: в попапе «в 1 клик» его не спрашивают — там только телефон.
+  if (name && (name.length < 2 || name.length > 60)) return "Проверьте имя";
   if (!CHANNELS.has(channel)) return "Выберите способ связи";
 
   const digits = contact.replace(/\D/g, "");
@@ -97,9 +106,12 @@ async function notify(lead: Record<string, unknown>, id: number): Promise<boolea
   const utm = lead.utm ? `\n\nUTM: ${lead.utm}` : "";
   const text =
     `Заявка №${id} — ${lead.page ?? "сайт"}\n` +
-    `Имя: ${lead.name}\n` +
+    `Имя: ${lead.name || "не указано"}\n` +
     `Связь: ${CHANNEL_LABELS[String(lead.channel)]} — ${lead.contact}\n` +
     (lead.geo ? `Гео: ${lead.geo}\n` : "") +
+    // «Детали», а не «Откуда»: сюда приезжает и товар из карточки,
+    // и кейс портфолио, и пожелание «перезвонить в течение часа».
+    (lead.source ? `Детали: ${lead.source}\n` : "") +
     (lead.magnet ? `Лид-магнит: ${lead.magnet}\n` : "") +
     quiz + utm;
 
@@ -165,6 +177,7 @@ Bun.serve({
         channel: String(body.channel),
         page: body.page ? String(body.page) : null,
         geo: body.geo ? String(body.geo) : null,
+        source: body.source ? String(body.source).slice(0, 200) : null,
         magnet: body.magnet ? String(body.magnet) : null,
         quiz: body.quiz ? JSON.stringify(body.quiz) : null,
         utm: body.utm ? JSON.stringify(body.utm) : null,
@@ -173,8 +186,8 @@ Bun.serve({
 
       const row = insertLead.get({
         $created_at: lead.created_at, $name: lead.name, $contact: lead.contact,
-        $channel: lead.channel, $page: lead.page, $geo: lead.geo, $magnet: lead.magnet,
-        $quiz: lead.quiz, $utm: lead.utm, $ip: lead.ip,
+        $channel: lead.channel, $page: lead.page, $geo: lead.geo, $source: lead.source,
+        $magnet: lead.magnet, $quiz: lead.quiz, $utm: lead.utm, $ip: lead.ip,
       }) as { id: number };
 
       if (await notify(lead, row.id)) markDelivered.run(row.id);

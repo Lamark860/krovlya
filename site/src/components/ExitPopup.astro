@@ -1,4 +1,6 @@
 ---
+import Consent from "./Consent.astro";
+import FormHiddens from "./FormHiddens.astro";
 /**
  * Exit-popup с лид-магнитом. По методике курса: активируется не сразу (15 секунд
  * на странице), показывается один раз за сессию, содержит лид-магнит с цифрой выгоды.
@@ -44,23 +46,19 @@ const { title, lead, magnet, bullets } = Astro.props;
         <input name="contact" required inputmode="tel" data-contact placeholder="+7 " />
       </label>
 
-      <input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
-      <!-- Без этого поля заявка из попапа приезжала без города: скрипт форм
-           читает гео из самой формы, а не из страницы. -->
-      <input type="hidden" name="geo" value={company.geo.cities[company.geo.default].label} />
+      <FormHiddens />
 
-      <label class="consent">
-        <input type="checkbox" name="consent" required />
-        <span>Согласен на <a href="/privacy">обработку персональных данных</a> и <a href="/cookies">использование cookie</a></span>
-      </label>
+      <Consent />
 
       <button class="btn" type="submit">Получить файл</button>
-      <p class="popup__error" data-error hidden></p>
+      <p class="form-error" data-error hidden></p>
     </form>
   </div>
 </dialog>
 
 <script>
+  import "../scripts/leadForms";
+
   const popup = document.querySelector<HTMLDialogElement>("[data-exit-popup]");
   if (popup && !sessionStorage.getItem("exit-popup-shown")) {
     let armed = false;
@@ -84,38 +82,8 @@ const { title, lead, magnet, bullets } = Astro.props;
 </script>
 
 <style>
-  .popup {
-    border: 0;
-    padding: 0;
-    max-width: 620px;
-    width: calc(100% - var(--s-4));
-    background: var(--surface);
-    color: var(--ink);
-  }
-
-  .popup::backdrop { background: rgb(28 31 34 / 0.55); }
-
-  .popup__inner {
-    padding: var(--s-8) var(--s-4);
-    display: grid;
-    gap: var(--s-2);
-    position: relative;
-    box-shadow: inset 0 0 0 1px var(--line);
-  }
-
-  .popup__close {
-    position: absolute;
-    top: var(--s-1);
-    right: var(--s-1);
-    width: 44px;
-    height: 44px;
-    border: 0;
-    background: transparent;
-    color: var(--ink-2);
-    font-size: 1rem;
-    cursor: pointer;
-  }
-
+  /* Каркас попапа (.popup, .popup__inner, .popup__close) — в tokens.css:
+     он общий с попапом «в 1 клик». Здесь только своё. */
   .popup__title { font-size: var(--t-h2); }
 
   .popup__bullets {
@@ -135,13 +103,8 @@ const { title, lead, magnet, bullets } = Astro.props;
     top: 0.5em;
     width: 8px;
     height: 8px;
-    background: var(--warm);
+    background: var(--accent);
   }
 
   .popup__form { display: grid; gap: var(--s-2); margin-top: var(--s-2); }
-  .popup__error { color: #b00020; font-size: var(--t-small); }
-
-  @media (min-width: 720px) {
-    .popup__inner { padding: var(--s-8); }
-  }
 </style>

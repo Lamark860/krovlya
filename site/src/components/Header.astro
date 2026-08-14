@@ -32,6 +32,8 @@ const { cta = "/poly#lead" } = Astro.props;
   .header {
     background: var(--surface);
     border-bottom: 1px solid var(--line);
+    /* Высота шапки нужна обложке: она занимает ровно один экран за вычетом шапки.
+       Держим её здесь, чтобы значение не разъехалось с реальным padding. */
     position: sticky;
     top: 0;
     z-index: 20;
@@ -66,7 +68,7 @@ const { cta = "/poly#lead" } = Astro.props;
       linear-gradient(var(--ink), var(--ink)) 0 0 / 10px 10px no-repeat,
       linear-gradient(var(--ink), var(--ink)) 12px 0 / 10px 10px no-repeat,
       linear-gradient(var(--ink), var(--ink)) 0 12px / 10px 10px no-repeat,
-      linear-gradient(var(--warm), var(--warm)) 12px 12px / 10px 10px no-repeat;
+      linear-gradient(var(--accent), var(--accent)) 12px 12px / 10px 10px no-repeat;
   }
 
   .header__contacts {

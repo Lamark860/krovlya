@@ -5,22 +5,25 @@ import Hero from "../components/Hero.astro";
 import Quiz from "../components/Quiz.astro";
 import Steps from "../components/Steps.astro";
 import Showcase from "../components/Showcase.astro";
+import Portfolio from "../components/Portfolio.astro";
+import PriceList from "../components/PriceList.astro";
+import Magnet from "../components/Magnet.astro";
+import Payment from "../components/Payment.astro";
+import Offers from "../components/Offers.astro";
+import About from "../components/About.astro";
+import Consult from "../components/Consult.astro";
+import Contacts from "../components/Contacts.astro";
 import Faq from "../components/Faq.astro";
-import LeadForm from "../components/LeadForm.astro";
 import ExitPopup from "../components/ExitPopup.astro";
+import QuickForm from "../components/QuickForm.astro";
+
+const MAGNET_BULLETS = [
+  "Что реально выдерживает воду, а что только называется влагостойким",
+  "Какой класс нужен для квартиры, аренды и дома с животными",
+  "Что можно класть на тёплый пол и при какой температуре",
+  "На чём можно сэкономить без последствий, а на чём нельзя",
+];
 import Footer from "../components/Footer.astro";
-import showcase from "../data/showcase.json";
-
-// Образцы первого экрана — реальные позиции со склада, по одной из разных подборок:
-// так видно и ламинат, и кварцвинил, и разброс цен.
-const blocks = (showcase as any).poly;
-const heroSamples = [
-  blocks[1]?.items[0],  // ламинат 33 класса
-  blocks[2]?.items[0],  // кварцвинил
-  blocks[0]?.items[1],  // под тёплый пол
-  blocks[3]?.items[0],  // 43 класс
-].filter(Boolean);
-
 const steps = [
   { title: "Замер", text: "Приезжаем, считаем площадь с подрезкой и смотрим основание. Ничего не навязываем.", free: true },
   { title: "Подбор", text: "Показываем варианты под нагрузку помещения и бюджет — в шоуруме или онлайн.", free: true },
@@ -77,7 +80,11 @@ const faq = [
         { value: "14 дней", label: "держим рассчитанную цену" },
         { value: "3 месяца", label: "бесплатно храним материал" },
       ]}
-      samples={heroSamples}
+    />
+
+    <PriceList
+      title="Скачайте <b>прайс-лист на ламинат и кварцвинил</b> в 1 клик"
+      lead="Цены на все позиции со склада и под заказ. Пришлём туда, где вам удобно."
     />
 
     <Quiz />
@@ -86,26 +93,43 @@ const faq = [
 
     <Showcase direction="poly" />
 
-    <Faq items={faq} />
-
-    <LeadForm
-      title="Запишитесь на бесплатный замер"
-      lead="Приедем, посчитаем площадь с подрезкой, проверим основание и назовём точную стоимость. Замер ни к чему не обязывает."
-      submit="Записаться на замер"
+    {/* Чуть выше середины страницы — так просил заказчик (ответ 13) */}
+    <Magnet
+      title="Ламинат или кварцвинил: сравнение по 14 параметрам"
+      lead="Разбор, из-за чего пол вздувается и расходится в замках — и как не переплатить за класс, который вам не нужен."
+      magnet="floor-comparison"
+      bullets={MAGNET_BULLETS}
     />
+
+    <PriceList
+      title="Нет времени изучать каталог? <b>Скачайте прайс с актуальными ценами</b> прямо сейчас"
+      lead="Весь ассортимент напольных покрытий одним файлом — с ценами на сегодня."
+      updated
+    />
+
+    <Portfolio />
+
+    <Payment />
+
+    <Offers />
+
+    <About />
+
+    <Consult />
+
+    <Contacts />
+
+    <Faq items={faq} />
   </main>
 
   <Footer />
+
+  <QuickForm />
 
   <ExitPopup
     title="Ламинат или кварцвинил: сравнение по 14 параметрам"
     lead="Разбор, из-за чего пол вздувается и расходится в замках — и как не переплатить за класс, который вам не нужен."
     magnet="floor-comparison"
-    bullets={[
-      "Что реально выдерживает воду, а что только называется влагостойким",
-      "Какой класс нужен для квартиры, аренды и дома с животными",
-      "Что можно класть на тёплый пол и при какой температуре",
-      "На чём можно сэкономить без последствий, а на чём нельзя",
-    ]}
+    bullets={MAGNET_BULLETS}
   />
 </Base>

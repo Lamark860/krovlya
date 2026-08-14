@@ -1,0 +1,90 @@
+---
+/**
+ * Контакты. По ТЗ (п. 12) — как у референса: адрес, режим, телефон и карта.
+ *
+ * Карта — виджет Яндекса в iframe с `loading="lazy"`: до прокрутки до блока
+ * он не грузится и не тянет чужие скрипты на первый экран.
+ * Адрес и организация берутся из карточки на Яндексе (вопрос 35).
+ */
+import SectionIntro from "./SectionIntro.astro";
+import { company } from "../data/company";
+
+const MAP = "https://yandex.ru/map-widget/v1/?oid=72128044422&ol=biz&z=16";
+---
+
+<section class="contacts section" id="contacts">
+  <div class="layout">
+    <SectionIntro
+      eyebrow="как нас найти"
+      title="Приезжайте в шоурум — покажем образцы и посчитаем стоимость"
+      lead="Образцы покрытий можно потрогать и сравнить вживую: на экране цвет и фактура выглядят иначе."
+    />
+
+    <div class="tile contacts__info">
+      <dl class="contacts__rows">
+        <div class="contacts__row">
+          <dt class="muted">Адрес</dt>
+          <dd>{company.showroom.address}</dd>
+        </div>
+        <div class="contacts__row">
+          <dt class="muted">Режим работы</dt>
+          <dd>{company.showroom.hours}</dd>
+        </div>
+        <div class="contacts__row">
+          <dt class="muted">Телефон</dt>
+          <dd><a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a></dd>
+        </div>
+        <div class="contacts__row">
+          <dt class="muted">Юрлицо</dt>
+          <dd class="small">{company.legalName} · ИНН {company.inn}</dd>
+        </div>
+      </dl>
+
+      <p class="contacts__actions">
+        <a class="btn" href="#lead">Записаться на замер</a>
+        <a class="btn btn--ghost" href={company.yandex.url} target="_blank" rel="noopener">Смотреть отзывы</a>
+      </p>
+    </div>
+
+    <div class="tile contacts__map">
+      <iframe
+        src={MAP}
+        title="«Мой ремонт» на Яндекс.Картах"
+        loading="lazy"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contacts__info {
+    grid-column: span 12;
+    display: grid;
+    gap: var(--s-4);
+    align-content: start;
+  }
+
+  .contacts__rows { display: grid; gap: var(--s-1); }
+
+  .contacts__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: var(--s-2);
+    padding-block: var(--s-1);
+    border-bottom: 1px solid var(--line);
+    font-size: var(--t-small);
+  }
+
+  .contacts__row:last-child { border-bottom: 0; }
+  .contacts__row dd { margin: 0; }
+  .contacts__actions { display: flex; flex-wrap: wrap; gap: var(--seam); max-width: none; }
+
+  .contacts__map { grid-column: span 12; padding: 0; min-height: 320px; }
+  .contacts__map iframe { width: 100%; height: 100%; min-height: 320px; border: 0; display: block; }
+
+  @media (min-width: 900px) {
+    .contacts__info { grid-column: span 5; }
+    .contacts__map { grid-column: span 7; }
+  }
+</style>

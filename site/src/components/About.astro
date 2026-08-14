@@ -1,0 +1,96 @@
+---
+/**
+ * О компании. По ТЗ (п. 10) — как у референса, инфа из карточки организации
+ * на Яндексе, оттуда же четыре фото (это фото самого клиента, скачаны к себе).
+ *
+ * Рейтинг и число отзывов — настоящие, с той же карточки, поэтому рядом
+ * стоит ссылка: непроверяемая цифра работает хуже, чем проверяемая.
+ * Тексты отзывов не выдумываем — ждём от клиента (вопрос 36).
+ */
+import SectionIntro from "./SectionIntro.astro";
+import { company } from "../data/company";
+
+const reasons = [
+  {
+    image: "/img/about-1.webp",
+    caption: "Два зала керамогранита и напольных покрытий — образцы можно потрогать, а не выбирать по экрану",
+  },
+  {
+    image: "/img/about-2.webp",
+    caption: "Всё для ремонта в одном месте: покрытие, затирка, двери, сантехника",
+  },
+  {
+    image: "/img/about-3.webp",
+    caption: "Менеджер считает раскладку и подрезку при вас — видно, за что платите",
+  },
+  {
+    image: "/img/about-4.webp",
+    caption: "Свой склад: ходовые позиции отгружаем сразу, остальное — под заказ",
+  },
+];
+---
+
+<section class="about section">
+  <div class="layout">
+    <SectionIntro
+      eyebrow="о компании"
+      title="«Мой ремонт» — магазин отделочных материалов в Ижевске"
+      lead="Продаём напольные покрытия, плитку и керамогранит и делаем ремонт под ключ: замер, подбор, дизайн-проект, доставка и укладка своей бригадой."
+    >
+      <a class="about__rating" href={company.yandex.url} target="_blank" rel="noopener">
+        <span class="about__stars num">{company.yandex.rating.toString().replace(".", ",")}</span>
+        <span class="about__rating-text">
+          на Яндекс.Картах, {company.yandex.reviews} отзыва — смотреть карточку →
+        </span>
+      </a>
+    </SectionIntro>
+
+    {reasons.map((reason) => (
+      <figure class="tile about__item">
+        <img src={reason.image} alt="" loading="lazy" width="600" height="450" />
+        <figcaption class="about__caption">{reason.caption}</figcaption>
+      </figure>
+    ))}
+  </div>
+</section>
+
+<style>
+  .about__rating {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin-top: var(--s-2);
+    padding: var(--s-1) var(--s-2);
+    background: var(--accent-tint);
+    border-left: 3px solid var(--accent);
+    text-decoration: none;
+  }
+
+  .about__stars { font-size: var(--t-h3); font-weight: 600; }
+  .about__rating-text { font-size: var(--t-small); color: var(--ink-2); }
+  .about__rating:hover .about__rating-text { color: var(--ink); }
+
+  .about__item {
+    grid-column: span 12;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .about__item img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+
+  .about__caption {
+    padding: var(--s-2);
+    font-size: var(--t-small);
+    line-height: 1.4;
+    margin-top: auto;
+  }
+
+  @media (min-width: 720px) {
+    .about__item { grid-column: span 6; }
+  }
+
+  @media (min-width: 1024px) {
+    .about__item { grid-column: span 3; }
+  }
+</style>

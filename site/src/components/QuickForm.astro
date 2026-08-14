@@ -1,0 +1,111 @@
+---
+import Consent from "./Consent.astro";
+import FormHiddens from "./FormHiddens.astro";
+/**
+ * Попап «в один клик»: одно поле — телефон.
+ *
+ * Один диалог на страницу, а открывает его любой элемент с `data-quick`.
+ * Заголовок, подпись, надпись на кнопке и источник заявки берутся из data-атрибутов
+ * этого элемента — так одним попапом пользуются и карточки товара («Заказать в 1 клик»),
+ * и кейсы портфолио («Хочу так же»), и не приходится плодить формы.
+ *
+ * Триггер выглядит так:
+ *   <button data-quick
+ *           data-quick-title="Хочу так же"
+ *           data-quick-lead="Перезвоним и посчитаем ваш метраж"
+ *           data-quick-submit="Жду звонка"
+ *           data-quick-source="Кейс: Ижевск, ЖК «Ключевой»">
+ */
+import { company } from "../data/company";
+---
+
+<dialog class="popup quick" data-quick-dialog aria-labelledby="quick-title">
+  <div class="popup__inner">
+    <button class="popup__close" data-close aria-label="Закрыть">✕</button>
+
+    <h2 class="quick__title" id="quick-title" data-quick-title>Заказать в 1 клик</h2>
+    <p class="muted quick__lead" data-quick-lead>Перезвоним как можно скорее и уточним детали заказа.</p>
+
+    <form class="quick__form" data-lead data-channel="phone">
+      {/* Имя спрашиваем не всегда: у «в 1 клик» одно поле, у лид-магнита — два.
+          Поле не просто прячется, а отключается: скрытое, но включённое
+          `required` не даёт отправить форму, и человек не понимает почему. */}
+      <label class="field" data-quick-name hidden>
+        <span class="field__label">Как к вам обращаться</span>
+        <input name="name" autocomplete="name" placeholder="Имя" disabled />
+      </label>
+
+      <label class="field">
+        <span class="field__label" data-contact-label>Введите ваш телефон</span>
+        <input name="contact" required inputmode="tel" data-contact placeholder="+7 " />
+      </label>
+
+      <FormHiddens source />
+
+      <Consent />
+
+      <button class="btn" type="submit" data-quick-submit>Заказать сейчас</button>
+      <p class="form-error" data-error hidden></p>
+    </form>
+
+    <p class="micro muted quick__note">
+      Или сразу позвоните: <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+    </p>
+  </div>
+</dialog>
+
+<script>
+  import "../scripts/leadForms";
+
+  const dialog = document.querySelector<HTMLDialogElement>("[data-quick-dialog]");
+
+  if (dialog) {
+    const title = dialog.querySelector<HTMLElement>("[data-quick-title]")!;
+    const lead = dialog.querySelector<HTMLElement>("[data-quick-lead]")!;
+    const submit = dialog.querySelector<HTMLElement>("[data-quick-submit]")!;
+    const source = dialog.querySelector<HTMLInputElement>("input[name=source]")!;
+    const contact = dialog.querySelector<HTMLInputElement>("[data-contact]")!;
+    const form = dialog.querySelector<HTMLFormElement>("form")!;
+    const nameField = dialog.querySelector<HTMLElement>("[data-quick-name]")!;
+    const nameInput = nameField.querySelector<HTMLInputElement>("input")!;
+
+    // Делегирование, а не подписка на каждую кнопку: карточек товара будет
+    // несколько сотен, и вешать на них по обработчику незачем.
+    document.addEventListener("click", (event) => {
+      const trigger = (event.target as HTMLElement).closest<HTMLElement>("[data-quick]");
+      if (!trigger) return;
+
+      title.textContent = trigger.dataset.quickTitle || "Заказать в 1 клик";
+      lead.textContent = trigger.dataset.quickLead || "Перезвоним как можно скорее и уточним детали заказа.";
+      submit.textContent = trigger.dataset.quickSubmit || "Заказать сейчас";
+      source.value = trigger.dataset.quickSource || "";
+
+      // Лид-магнит: API вернёт одноразовую ссылку на файл, если знает какой
+      if (trigger.dataset.quickMagnet) form.dataset.magnet = trigger.dataset.quickMagnet;
+      else delete form.dataset.magnet;
+
+      const wantsName = trigger.dataset.quickName !== undefined;
+      nameField.hidden = !wantsName;
+      nameInput.disabled = !wantsName;
+      nameInput.required = wantsName;
+
+      dialog.showModal();
+      (wantsName ? nameInput : contact).focus();
+    });
+
+    dialog.querySelector("[data-close]")?.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  }
+</script>
+
+<style>
+  .quick { max-width: 440px; }
+  .quick .popup__inner { gap: var(--s-2); padding: var(--s-6) var(--s-4); }
+  .quick__title { font-size: var(--t-h3); }
+  .quick__lead { font-size: var(--t-small); }
+  .quick__form { display: grid; gap: var(--s-2); margin-top: var(--s-2); }
+  .quick__note { margin-top: var(--s-1); }
+  .quick__note a { text-decoration: none; }
+</style>
