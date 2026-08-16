@@ -10,6 +10,7 @@
  */
 import Consent from "./Consent.astro";
 import FormHiddens from "./FormHiddens.astro";
+import Person from "./Person.astro";
 import { company } from "../data/company";
 
 interface Props {
@@ -41,7 +42,7 @@ const WHEN = [
       <form class="consult__form" data-lead data-channel="phone">
         <label class="field consult__field">
           <span class="field__label">В какое время вам позвонить?</span>
-          <select class="control consult__select" name="source">
+          <select class="control" name="source">
             {WHEN.map((when) => <option value={`Перезвонить: ${when.toLowerCase()}`}>{when}</option>)}
           </select>
         </label>
@@ -65,12 +66,9 @@ const WHEN = [
       </p>
     </div>
 
-    <figure class="consult__person">
-      <img src="/img/manager.webp" alt="Менеджер-консультант «Мой ремонт»" loading="lazy" width="700" height="1073" />
-      <figcaption class="consult__badge">
-        <span class="consult__dot" aria-hidden="true"></span> Онлайн, отвечаем за 15 минут
-      </figcaption>
-    </figure>
+    <div class="consult__person">
+      <Person badge="Онлайн, отвечаем за 15 минут" />
+    </div>
   </div>
 </section>
 
@@ -110,34 +108,14 @@ const WHEN = [
   }
 
   .consult__form { display: grid; gap: var(--s-2); width: 100%; margin-top: var(--s-2); }
-  .consult__select { min-height: 48px; padding: 0 var(--s-2); cursor: pointer; }
   .consult__consent { max-width: 46ch; }
   .consult__phone { margin-top: var(--s-2); font-size: var(--t-small); }
   .consult__phone a { font-weight: 500; }
 
   /* Фото менеджера — не иллюстрация, а подпись под обещанием «отвечаем за
-     15 минут»: обещание с лицом рядом читается как чьё-то, а не ничьё. */
+     15 минут»: обещание с лицом рядом читается как чьё-то, а не ничьё.
+     На телефоне прячем: там первым делом нужна форма, а не портрет. */
   .consult__person { display: none; }
-
-  .consult__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s-1);
-    margin-top: calc(var(--s-4) * -1);
-    padding: var(--s-1) var(--s-2);
-    /* Явный белый, а не токен: внутри `.on-dark` поверхность прозрачная */
-    background: #fff;
-    color: #092532;
-    font-size: var(--t-small);
-    font-weight: 500;
-  }
-
-  .consult__dot {
-    width: 8px;
-    height: 8px;
-    background: #1e9e5a;
-    border-radius: 50%;
-  }
 
   @media (min-width: 900px) {
     .consult__text { grid-column: span 7; }
@@ -149,12 +127,10 @@ const WHEN = [
     .consult__person {
       grid-column: span 5;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
       align-self: end;
     }
 
-    .consult__person img { max-height: 460px; width: auto; }
-    .consult__badge { background: #fff; }
+    .consult__person :global(.person) { width: 100%; max-width: 360px; }
   }
 </style>

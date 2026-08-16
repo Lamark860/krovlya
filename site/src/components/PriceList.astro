@@ -35,7 +35,7 @@ const { title, lead, updated = false } = Astro.props;
       <form class="price__form" data-lead data-source="Запрос прайс-листа">
         <label class="field price__field">
           <span class="field__label">Куда отправить</span>
-          <select class="control price__select" name="channel">
+          <select class="control" name="channel">
             <option value="telegram">Telegram</option>
             <option value="max">MAX</option>
             <option value="phone">Позвоните мне</option>
@@ -96,12 +96,6 @@ const { title, lead, updated = false } = Astro.props;
   .price__text { display: grid; gap: var(--s-1); }
   .price__form { display: grid; gap: var(--s-2); align-content: center; }
   .price__field { min-width: 0; }
-
-  .price__select {
-    min-height: 48px;
-    padding: 0 var(--s-2);
-    cursor: pointer;
-  }
 
   .price__consent { max-width: 46ch; }
 

@@ -1,0 +1,80 @@
+---
+/**
+ * Фото менеджера с плашкой статуса.
+ *
+ * По правке Артура (п. 6) плашка стоит **внутри** карточки, а не под фото:
+ * раньше она висела снизу отдельной строкой и наезжала на текст, а вырезанный
+ * без фона человек выглядел обрубленным. Здесь фото лежит в карточке с фоном
+ * и подрезается её краем — так и задумано на образце, который прислал заказчик.
+ *
+ * Один компонент на два места (квиз и блок консультации): текст плашки —
+ * это обещание клиенту, и менять его нужно в одном месте (вопрос 42).
+ */
+interface Props {
+  /** Подпись на плашке */
+  badge?: string;
+  /** Подсказка для лениво грузящихся картинок ниже первого экрана */
+  eager?: boolean;
+}
+
+const { badge = "Онлайн", eager = false } = Astro.props;
+---
+
+<figure class="person">
+  <img
+    class="person__photo"
+    src="/img/manager.webp"
+    alt="Менеджер-консультант «Мой ремонт»"
+    loading={eager ? "eager" : "lazy"}
+    width="700"
+    height="1073"
+  />
+  <figcaption class="person__badge">
+    <span class="person__dot" aria-hidden="true"></span>{badge}
+  </figcaption>
+</figure>
+
+<style>
+  .person {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    /* Фон под вырезом: на белом человек читался как обрубок, на тёмном
+       карточка выглядит снимком. Тон светлее секции `.on-dark`, иначе
+       в блоке консультации карточка слилась бы с фоном. */
+    background: linear-gradient(165deg, #17475f 0%, #092532 100%);
+    aspect-ratio: 3 / 4;
+  }
+
+  .person__photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Кадрируем сверху: лицо важнее, низ подрезает край карточки */
+    object-position: top center;
+  }
+
+  .person__badge {
+    position: absolute;
+    left: var(--s-2);
+    bottom: var(--s-2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px var(--s-1);
+    /* Явный белый: внутри `.on-dark` поверхность прозрачная */
+    background: #fff;
+    color: #092532;
+    font-size: var(--t-micro);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .person__dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    background: #1e9e5a;
+    border-radius: 50%;
+  }
+</style>

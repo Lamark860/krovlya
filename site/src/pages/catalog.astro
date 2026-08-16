@@ -120,12 +120,20 @@ import { company } from "../data/company";
   function card(item: Item) {
     const meta = [item.v, item.s].filter(Boolean).join(" · ");
     const unit = item.e ? `₽/${item.e}` : "₽";
+    const safeName = item.n.replace(/"/g, "&quot;");
+    // Ни фото, ни название не ведут на moiremont18.ru (правка п. 1):
+    // клик по карточке открывает тот же попап, что кнопка ниже.
     return `
       <article class="tile card">
-        <a class="card__link" href="${item.u}" target="_blank" rel="noopener">
-          <img src="${item.i}" alt="${item.n.replace(/"/g, "&quot;")}" loading="lazy" width="450" height="450" />
-          <h3 class="card__name">${item.n}</h3>
-        </a>
+        <button type="button" class="card__link"
+                data-quick
+                data-quick-title="Купить в 1 клик"
+                data-quick-lead="Перезвоним как можно скорее и уточним детали заказа."
+                data-quick-submit="Заказать сейчас"
+                data-quick-source="${safeName}">
+          <img src="${item.i}" alt="${safeName}" loading="lazy" width="450" height="450" />
+          <span class="card__name">${item.n}</span>
+        </button>
         <p class="card__meta">${meta}</p>
         <p class="card__price num">${money(item.p)} <span class="unit">${unit}</span>
           <s class="card__old num">${money(strikePrice(item.n, item.p))}</s></p>

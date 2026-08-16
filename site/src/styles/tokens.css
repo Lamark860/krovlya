@@ -295,10 +295,25 @@ figure, dialog, ul, ol, dl, dd { margin: 0; }
   flex-direction: column;
 }
 
-.card__link { text-decoration: none; display: block; }
+/* Карточка кликается целиком и открывает «Купить в 1 клик».
+   Раньше фото и название были ссылкой на moiremont18.ru — клик по товару
+   уводил с лендинга на чужую воронку (правка Артура п. 1). Это кнопка,
+   а не ссылка: своей страницы у товара нет и уходить отсюда некуда. */
+.card__link {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 .card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: var(--bg); }
 
 .card__name {
+  display: block;
   font-family: var(--font-body);
   font-size: var(--t-small);
   font-weight: 500;
@@ -378,6 +393,33 @@ figure, dialog, ul, ol, dl, dd { margin: 0; }
 .field input {
   min-height: 48px;
   padding: 0 var(--s-2);
+}
+
+/* Выпадающие списки — два лечения из правок Артура (п. 2, 2б и 4).
+   1. Список пунктов рисует система, всегда на своём светлом фоне, а цвет
+      текста наследуется от поля. Внутри `.on-dark` он белый — пункты
+      получались белым по белому. Цвет задаём явно и здесь, а не в компоненте:
+      иначе баг вернётся в любом новом списке внутри тёмной секции.
+   2. Системную стрелку на телефоне почти не видно, и поле не читается как
+      нажимаемое. Рисуем свою — оранжевым блоком: он одинаково заметен
+      и на светлой секции, и на тёмной, и попадает в фирменный акцент. */
+select option {
+  background: #fff;
+  color: #092532;
+}
+
+select.control {
+  min-height: 48px;
+  padding: 0 60px 0 var(--s-2);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 9'%3E%3Cpath d='M1 1.5 7 7.5 13 1.5' fill='none' stroke='%23092532' stroke-width='2'/%3E%3C/svg%3E"),
+    linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 19px center, right center;
+  background-size: 14px 9px, 52px 100%;
 }
 
 .consent {

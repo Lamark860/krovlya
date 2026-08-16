@@ -34,10 +34,22 @@ const money = (value: number) => value.toLocaleString("ru-RU");
 
     {items.map((item: any) => (
       <article class="tile card">
-        <a class="card__link" href={item.url} target="_blank" rel="noopener">
+        {/* Ни фото, ни название больше не ведут на moiremont18.ru (правка п. 1):
+            клик по карточке открывает тот же попап, что кнопка ниже. */}
+        <button
+          type="button"
+          class="card__link"
+          data-quick
+          data-quick-title="Купить в 1 клик"
+          data-quick-lead="Перезвоним как можно скорее и уточним детали заказа."
+          data-quick-submit="Заказать сейчас"
+          data-quick-source={item.name}
+        >
           <img src={item.picture} alt={item.name} loading="lazy" width="450" height="450" />
-          <h3 class="card__name">{item.name}</h3>
-        </a>
+          {/* Название — не заголовок: внутрь кнопки заголовок класть нельзя,
+              её содержимое по спецификации только строчное */}
+          <span class="card__name">{item.name}</span>
+        </button>
 
         <p class="card__meta muted">
           {[item.vendor, item.params?.["Класс"] && `${item.params["Класс"]} класс`,

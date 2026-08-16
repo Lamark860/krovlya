@@ -8,6 +8,7 @@
  *  • вопросов ровно пять — столько же, сколько обещано в объявлении и на первом экране.
  *    Канал связи и подарок — это не вопросы о поле, они живут на экране результата.
  */
+import Person from "./Person.astro";
 ---
 
 <section class="quiz section" id="quiz">
@@ -39,10 +40,11 @@
     </div>
 
     {/* Живой человек рядом с расчётом: обещание «поможем выбрать» с лицом
-        читается как чьё-то, а не как строчка в вёрстке. */}
+        читается как чьё-то, а не как строчка в вёрстке.
+        На телефоне блок раньше просто пропадал (правка Артура п. 3) —
+        теперь стоит под квизом строкой: фото слева, текст справа. */}
     <aside class="tile quiz__person">
-      <img src="/img/manager.webp" alt="Менеджер-консультант «Мой ремонт»" loading="lazy" width="700" height="1073" />
-      <p class="quiz__badge"><span class="quiz__dot" aria-hidden="true"></span> Онлайн</p>
+      <Person />
       <p class="quiz__person-text small muted">
         Считаем материал по ценам каталога, а не «в среднем по рынку».
         Если ответ неочевиден — выберите «не знаю», уточним на замере.
@@ -382,7 +384,7 @@
             <span>Согласен на <a href="/privacy">обработку персональных данных</a> и <a href="/cookies">использование cookie</a></span>
           </label>
 
-          <button class="btn" type="submit">Забронировать цену и записаться на замер</button>
+          <button class="btn" type="submit">Забронировать подарок и получить консультацию</button>
           <p class="quiz__note micro muted">За вашим контактом закрепим эту цену и подарок на 14 дней.</p>
           <p class="quiz__error small" data-error hidden></p>
         </form>
@@ -547,32 +549,17 @@
     transition: width var(--dur-fast) var(--ease);
   }
 
+  /* На узком экране — строкой под квизом: фото слева, текст справа.
+     Раньше блок был скрыт до 900px, и на телефоне менеджера не было вовсе. */
   .quiz__person {
     grid-column: span 12;
-    display: none;
-    flex-direction: column;
+    display: flex;
     align-items: center;
     gap: var(--s-2);
-    padding: var(--s-4);
+    padding: var(--s-2);
   }
 
-  .quiz__person img { max-height: 260px; width: auto; }
-
-  .quiz__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s-1);
-    padding: 2px var(--s-2);
-    background: #1e9e5a;
-    color: #fff;
-    font-size: var(--t-micro);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .quiz__dot { width: 7px; height: 7px; background: #fff; border-radius: 50%; }
-  .quiz__person-text { text-align: center; }
+  .quiz__person .person { flex: 0 0 132px; }
 
   .quiz__progress {
     font-size: 0.8125rem;
@@ -671,6 +658,16 @@
     .quiz__options--compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .quiz__result { display: grid; grid-template-columns: 5fr 7fr; gap: var(--s-8); }
     .quiz__box { grid-column: span 9; padding: var(--s-6); }
-    .quiz__person { grid-column: span 3; display: flex; }
+
+    .quiz__person {
+      grid-column: span 3;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--s-2);
+      padding: var(--s-2);
+    }
+
+    .quiz__person .person { flex: none; }
+    .quiz__person-text { text-align: left; }
   }
 </style>
