@@ -14,6 +14,12 @@
 
 declare(strict_types=1);
 
+// Ошибки — только в лог, никогда на экран. На хостинге display_errors может быть включён,
+// и тогда при любом сбое в браузер уезжает стектрейс с путями. Проверено на живом сервере:
+// без этого отсутствующая таблица отдавалась пользователю как текст ошибки, да ещё с кодом 200.
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
 // Конфиг лежит ВНЕ webroot и вне git: репозиторий публичный, а там пароль от базы,
 // токен бота и адрес получателя. Ожидаемое место — /var/www/<логин>/data/config/krovlya.php.
 //
@@ -40,6 +46,15 @@ const TOKEN_TTL_HOURS = 24;
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MIN = 10;
 const MIN_FILL_MS = 2000; // быстрее двух секунд форму заполняет только бот
+
+set_exception_handler(function (Throwable $e): void {
+    error_log('krovlya: необработанная ошибка — ' . $e->getMessage());
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('content-type: application/json; charset=utf-8');
+    }
+    echo json_encode(['error' => 'Сервис временно недоступен, позвоните нам'], JSON_UNESCAPED_UNICODE);
+});
 
 function json_out(array $data, int $status = 200): never
 {
@@ -200,12 +215,11 @@ if ($path === '/health') {
 }
 
 if ($path === '/lead' && $method === 'POST') {
+    // Под try — вся работа с базой целиком, а не только подключение: упасть может и запрос
+    // (нет таблицы, кончилось место, отвалился сокет), а человек у формы должен увидеть
+    // осмысленный ответ, а не пустую кнопку.
     try {
-        $pdo = db($config);
-    } catch (Throwable $e) {
-        error_log('krovlya: база недоступна — ' . $e->getMessage());
-        json_out(['error' => 'Сервис временно недоступен, позвоните нам'], 503);
-    }
+    $pdo = db($config);
 
     $ip = client_ip();
     if (rate_limited($pdo, $ip)) {
@@ -262,15 +276,16 @@ if ($path === '/lead' && $method === 'POST') {
     }
 
     json_out(['ok' => true, 'download' => $download]);
+
+    } catch (PDOException $e) {
+        error_log('krovlya: заявка не сохранена — ' . $e->getMessage());
+        json_out(['error' => 'Сервис временно недоступен, позвоните нам'], 503);
+    }
 }
 
 if ($path === '/download') {
     try {
-        $pdo = db($config);
-    } catch (Throwable $e) {
-        error_log('krovlya: база недоступна — ' . $e->getMessage());
-        json_out(['error' => 'Сервис временно недоступен'], 503);
-    }
+    $pdo = db($config);
 
     $token = (string) ($_GET['token'] ?? '');
     $stmt  = $pdo->prepare('SELECT * FROM downloads WHERE token = ?');
@@ -294,6 +309,11 @@ if ($path === '/download') {
     header("content-disposition: attachment; filename=\"$name.pdf\"");
     readfile($file);
     exit;
+
+    } catch (PDOException $e) {
+        error_log('krovlya: выдача лид-магнита не прошла — ' . $e->getMessage());
+        json_out(['error' => 'Сервис временно недоступен'], 503);
+    }
 }
 
 json_out(['error' => 'Not found'], 404);
