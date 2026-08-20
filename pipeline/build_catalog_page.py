@@ -5,6 +5,11 @@
 в HTML — это мегабайты разметки и секунды на разбор, при том что человек увидит
 первые двадцать. Поэтому здесь компактные записи и никаких описаний.
 
+Фильтры отдаются парами «имя + слаг»: слаг нужен странице, чтобы объявление могло
+привести сразу на нужную выборку — /catalog?group=laminat&sub=33-klass. Считаем его
+здесь, а не на клиенте: слаг обязан получаться из тех же данных, что и сам список
+фильтров, иначе список и адреса разъедутся при следующей выгрузке.
+
 Запускать после build_catalog.py и fetch_images.py — порядок в README.
 """
 import json
@@ -30,6 +35,39 @@ EXCLUDE_GROUPS = {"Подложка и комплектующие"}
 EXCLUDE_NAME = re.compile(r"^\s*подложк", re.IGNORECASE)
 
 
+# Кириллица в адресе превращается в проценты (%D0%9B%D0%B0…) — в объявлении это
+# выглядит мусором, а Директ показывает адрес человеку. Поэтому транслитерируем.
+TRANSLIT = str.maketrans({
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
+    "ж": "zh", "з": "z", "и": "i", "й": "y", "к": "k", "л": "l", "м": "m",
+    "н": "n", "о": "o", "п": "p", "р": "r", "с": "s", "т": "t", "у": "u",
+    "ф": "f", "х": "h", "ц": "ts", "ч": "ch", "ш": "sh", "щ": "sch",
+    "ъ": "", "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
+})
+
+
+def slug(value: str) -> str:
+    """«Крупноформат 600×1200 и больше» → krupnoformat-600x1200-i-bolshe."""
+    out = value.lower().replace("×", "x").translate(TRANSLIT)
+    return re.sub(r"[^a-z0-9]+", "-", out).strip("-")
+
+
+def named(values: list[str]) -> list[dict]:
+    """Список фильтров парами имя/слаг, слаги внутри списка не повторяются."""
+    out: list[dict] = []
+    seen: set[str] = set()
+    for value in values:
+        key = slug(value) or "x"
+        if key in seen:  # после транслитерации два разных имени могут сойтись
+            n = 2
+            while f"{key}-{n}" in seen:
+                n += 1
+            key = f"{key}-{n}"
+        seen.add(key)
+        out.append({"n": value, "k": key})
+    return out
+
+
 def local_photo(item_id: str) -> str | None:
     """Наш WebP, если он скачан. Правило имени — как в fetch_images.py."""
     name = re.sub(r"[^A-Za-z0-9._-]+", "_", item_id).strip("_")[:80] + ".webp"
@@ -45,8 +83,14 @@ def build(direction: str) -> dict:
     ]
     items.sort(key=lambda i: i["price"])
 
-    brands = [b for b, _ in Counter(i["vendor"] for i in items if i["vendor"]).most_common(TOP_BRANDS)]
-    groups = [g for g, _ in Counter(i["group"] for i in items).most_common()]
+    brands = named([b for b, _ in Counter(i["vendor"] for i in items if i["vendor"]).most_common(TOP_BRANDS)])
+
+    # Подгруппы кладём внутрь группы, а не общим списком: «Другие серии» есть
+    # и у ламината, и у кварцвинила — плоский фильтр смешал бы их в кучу.
+    groups = named([g for g, _ in Counter(i["group"] for i in items).most_common()])
+    for entry in groups:
+        subs = Counter(i["subgroup"] for i in items if i["group"] == entry["n"] and i["subgroup"])
+        entry["subs"] = named([s for s, _ in subs.most_common()])
 
     return {
         "direction": direction,

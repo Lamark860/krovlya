@@ -42,3 +42,7 @@ site/screenshots/
 # Живёт на сервере вне webroot; если случайно окажется здесь — в публичный репозиторий
 # он уйти не должен. В git ходит только config.example.php.
 api-php/config.php
+
+# Каталог ручной выкатки: собирается из site/dist + deploy/htaccess + api-php.
+# Это артефакт сборки, а не исходник — см. deploy/upload_ftp.py.
+release/

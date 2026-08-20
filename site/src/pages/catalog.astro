@@ -11,6 +11,11 @@
  * Отдельных страниц товара пока нет — карточка ведёт в магазин, а заявка
  * собирается попапом «в 1 клик». Это открытый вопрос 28: от него зависит,
  * куда указывают ссылки в YML-фиде.
+ *
+ * Фильтры читаются из адреса: /catalog?group=laminat&sub=33-klass&brand=tarkett.
+ * Это нужно рекламе — объявление «ламинат 33 класса» обязано приводить сразу
+ * на нужную выборку, а не на общий список, где сверху лежит кварцвинил.
+ * Слаги приходят из /data/catalog-poly.json, считает их build_catalog_page.py.
  */
 import Base from "../layouts/Base.astro";
 import Header from "../components/Header.astro";
@@ -54,6 +59,11 @@ import { company } from "../data/company";
             </div>
           </div>
 
+          <div class="cat__row" data-row="sub" hidden>
+            <p class="cat__label eyebrow">класс и формат</p>
+            <div class="cat__tabs" role="group" aria-label="Класс и формат" data-tabs="sub"></div>
+          </div>
+
           <div class="cat__row">
             <p class="cat__label eyebrow">бренд</p>
             <div class="cat__tabs" role="group" aria-label="Бренд" data-tabs="brand">
@@ -93,15 +103,25 @@ import { company } from "../data/company";
   import { strikePrice } from "../lib/pricing";
 
   type Item = { n: string; u: string; p: number; e: string; v: string; g: string; s: string; i: string };
+  type Named = { n: string; k: string };
+  type Group = Named & { subs: Named[] };
   const PAGE = 24;
 
   const grid = document.querySelector<HTMLElement>("[data-grid]")!;
   const count = document.querySelector<HTMLElement>("[data-count]")!;
   const more = document.querySelector<HTMLButtonElement>("[data-more]")!;
+  const rows = {
+    group: document.querySelector<HTMLElement>('[data-tabs="group"]')!,
+    sub: document.querySelector<HTMLElement>('[data-tabs="sub"]')!,
+    brand: document.querySelector<HTMLElement>('[data-tabs="brand"]')!,
+  };
+  const subRow = document.querySelector<HTMLElement>('[data-row="sub"]')!;
 
   let items: Item[] = [];
+  let groups: Group[] = [];
+  let brands: Named[] = [];
   let shown = 0;
-  const filters = { group: "", brand: "" };
+  const filters = { group: "", sub: "", brand: "" };
 
   const money = (value: number) => value.toLocaleString("ru-RU");
   const plural = (n: number, forms: [string, string, string]) => {
@@ -114,6 +134,7 @@ import { company } from "../data/company";
   function visible() {
     return items.filter((item) =>
       (!filters.group || item.g === filters.group) &&
+      (!filters.sub || item.s === filters.sub) &&
       (!filters.brand || item.v === filters.brand));
   }
 
@@ -158,17 +179,69 @@ import { company } from "../data/company";
     more.hidden = shown >= list.length;
   }
 
-  function tabs(name: "group" | "brand", values: string[]) {
-    const holder = document.querySelector<HTMLElement>(`[data-tabs="${name}"]`)!;
-    holder.insertAdjacentHTML("beforeend", values.map((value) =>
-      `<button type="button" class="control cat__tab" data-value="${value}">${value}</button>`).join(""));
+  function fill(holder: HTMLElement, values: Named[], active: string) {
+    const options = [{ n: "Все", v: "" }, ...values.map((value) => ({ n: value.n, v: value.n }))];
+    holder.innerHTML = options.map((option) =>
+      `<button type="button" class="control cat__tab${option.v === active ? " is-active" : ""}" data-value="${option.v}">${option.n}</button>`).join("");
+  }
 
-    holder.addEventListener("click", (event) => {
+  // Классы показываем только внутри выбранного вида покрытия. Общим списком
+  // «33 класс» ламината и «43 класс» кварцвинила читаются как одна шкала — а это
+  // разные шкалы, и «Другие серии» есть у обоих.
+  function syncSubs() {
+    const subs = groups.find((group) => group.n === filters.group)?.subs ?? [];
+    if (!subs.some((sub) => sub.n === filters.sub)) filters.sub = "";
+    subRow.hidden = subs.length === 0;
+    if (subs.length) fill(rows.sub, subs, filters.sub);
+  }
+
+  function fromUrl() {
+    // Регистр и пробелы не считаем значащими: слаг в объявление переносят руками,
+    // а «Tarkett» вместо «tarkett» не повод показать человеку весь каталог.
+    const query = new URLSearchParams(location.search);
+    const want = (key: string) => (query.get(key) ?? "").trim().toLowerCase();
+    const wantGroup = want("group");
+    const wantSub = want("sub");
+    const wantBrand = want("brand");
+
+    let group = groups.find((item) => item.k === wantGroup);
+    // ?sub=33-klass без группы — достраиваем группу сами: объявление не обязано
+    // знать нашу иерархию. Незнакомый слаг молча игнорируем и показываем весь
+    // каталог: пустая выдача на оплаченном переходе хуже неточной.
+    if (!group && wantSub) group = groups.find((item) => item.subs.some((sub) => sub.k === wantSub));
+    if (group) {
+      filters.group = group.n;
+      filters.sub = group.subs.find((sub) => sub.k === wantSub)?.n ?? "";
+    }
+    filters.brand = brands.find((brand) => brand.k === wantBrand)?.n ?? "";
+  }
+
+  function updateUrl() {
+    // Чужие параметры не трогаем: в адресе живут utm-метки, по которым считается
+    // реклама, и ?city из шапки. Снести их значило бы потерять атрибуцию заявки.
+    const query = new URLSearchParams(location.search);
+    for (const key of ["group", "sub", "brand"]) query.delete(key);
+
+    const group = groups.find((item) => item.n === filters.group);
+    if (group) query.set("group", group.k);
+    const sub = group?.subs.find((item) => item.n === filters.sub);
+    if (sub) query.set("sub", sub.k);
+    const brand = brands.find((item) => item.n === filters.brand);
+    if (brand) query.set("brand", brand.k);
+
+    const qs = query.toString();
+    history.replaceState(null, "", qs ? `${location.pathname}?${qs}` : location.pathname);
+  }
+
+  function wire(name: "group" | "sub" | "brand") {
+    rows[name].addEventListener("click", (event) => {
       const tab = (event.target as HTMLElement).closest<HTMLButtonElement>(".cat__tab");
       if (!tab) return;
-      holder.querySelectorAll(".cat__tab").forEach((b) => b.classList.toggle("is-active", b === tab));
       filters[name] = tab.dataset.value ?? "";
+      rows[name].querySelectorAll(".cat__tab").forEach((b) => b.classList.toggle("is-active", b === tab));
+      if (name === "group") syncSubs();
       render(true);
+      updateUrl();
       // Возвращаем к началу списка: иначе после фильтра человек стоит
       // в середине уже другой выдачи и думает, что ничего не изменилось.
       document.querySelector(".cat")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -182,11 +255,20 @@ import { company } from "../data/company";
       if (!response.ok) throw new Error(String(response.status));
       return response.json();
     })
-    .then((data: { items: Item[]; groups: string[]; brands: string[] }) => {
+    .then((data: { items: Item[]; groups: Group[]; brands: Named[] }) => {
       items = data.items;
-      tabs("group", data.groups);
-      tabs("brand", data.brands);
+      groups = data.groups;
+      brands = data.brands;
+
+      fromUrl();
+      fill(rows.group, groups, filters.group);
+      fill(rows.brand, brands, filters.brand);
+      syncSubs();
+      (["group", "sub", "brand"] as const).forEach(wire);
       render(true);
+      // Приводим адрес к каноническому виду: опечатка в слаге не применилась —
+      // пусть её и в строке не останется, иначе она уедет в отчёты Метрики.
+      updateUrl();
     })
     .catch(() => {
       // Пустая страница вместо каталога — потерянный оплаченный переход.
@@ -214,6 +296,8 @@ import { company } from "../data/company";
   }
 
   .cat__row { display: grid; gap: var(--s-1); }
+  /* display: grid перебивает атрибут hidden — без этого пустой ряд классов остаётся видимым */
+  .cat__row[hidden] { display: none; }
   .cat__label { margin: 0; }
   .cat__tabs { display: flex; flex-wrap: wrap; gap: var(--seam); }
 
