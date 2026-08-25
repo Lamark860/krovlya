@@ -1,6 +1,7 @@
 ---
 /**
- * Квиз-калькулятор по полам.
+ * Квиз-калькулятор. Один движок на обе посадочные, вопросы и формулы —
+ * в `src/data/quiz.ts` (см. `QUIZ.poly` и `QUIZ.plitka`).
  *
  * Устроен так по трём причинам:
  *  • ручного ввода нет — только кнопки (вручную заполняется только контакт);
@@ -9,13 +10,27 @@
  *    Канал связи и подарок — это не вопросы о поле, они живут на экране результата.
  */
 import Person from "./Person.astro";
+import { QUIZ } from "../data/quiz";
+
+interface Props {
+  direction: "poly" | "plitka";
+  /** Заголовок секции; часть после <b> красится акцентом */
+  title: string;
+  accent: string;
+  /** Подпись под фото менеджера: чем именно мы считаем честно */
+  personNote: string;
+}
+
+const { direction, title, accent, personNote } = Astro.props;
+const config = QUIZ[direction];
+const steps = config.steps.length;
 ---
 
-<section class="quiz section" id="quiz">
+<section class="quiz section" id="quiz" data-quiz data-direction={direction}>
   <div class="layout">
     <div class="tile quiz__intro">
-      <p class="eyebrow">расчёт за 2 минуты · 5 вопросов</p>
-      <h2>Рассчитайте стоимость пола <span class="quiz__accent">и получите укладку в подарок</span></h2>
+      <p class="eyebrow">расчёт за 2 минуты · {steps} вопросов</p>
+      <h2>{title} <span class="quiz__accent">{accent}</span></h2>
       <p class="quiz__promise">
         Приблизительную стоимость вы увидите сразу — <b>без отправки контактных данных</b>.
       </p>
@@ -27,8 +42,8 @@ import Person from "./Person.astro";
       </div>
 
       <header class="quiz__head">
-        <p class="quiz__progress num" data-quiz-progress>шаг 1 из 5</p>
-        <h3 class="quiz__title" data-quiz-title>Мне нужен пол…</h3>
+        <p class="quiz__progress num" data-quiz-progress>шаг 1 из {steps}</p>
+        <h3 class="quiz__title" data-quiz-title>{config.steps[0].title}</h3>
       </header>
 
       <div class="quiz__body" data-quiz-body></div>
@@ -45,108 +60,33 @@ import Person from "./Person.astro";
         теперь стоит под квизом строкой: фото слева, текст справа. */}
     <aside class="tile quiz__person">
       <Person />
-      <p class="quiz__person-text small muted">
-        Считаем материал по ценам каталога, а не «в среднем по рынку».
-        Если ответ неочевиден — выберите «не знаю», уточним на замере.
-      </p>
+      <p class="quiz__person-text small muted">{personNote}</p>
     </aside>
   </div>
 </section>
 
 <script>
-  type Step = {
-    id: string;
-    title: string;
-    hint?: string;
-    multiple?: boolean;
-    options: { value: string; label: string; note?: string }[];
-  };
+  import { QUIZ, rowPrice, rowPerMetre } from "../data/quiz";
+  import type { Answers, QuizOption } from "../data/quiz";
 
-  const STEPS: Step[] = [
-    {
-      id: "kind",
-      title: "Мне нужен пол…",
-      options: [
-        { value: "laminate", label: "Ламинат", note: "теплее на ощупь, дешевле" },
-        { value: "spc", label: "Кварцвинил, SPC", note: "не боится воды" },
-        { value: "any", label: "Не знаю — подберите", note: "решим на замере" },
-      ],
-    },
-    {
-      id: "rooms",
-      title: "Пол нужен для…",
-      options: [
-        { value: "1", label: "Одной комнаты", note: "около 18 м²" },
-        { value: "2", label: "Двух комнат", note: "около 32 м²" },
-        { value: "3", label: "Трёх комнат", note: "около 45 м²" },
-        { value: "all", label: "Всей квартиры", note: "от 60 м²" },
-        { value: "unknown", label: "Пока не знаю", note: "посчитаем на замере" },
-      ],
-    },
-    {
-      id: "place",
-      title: "Пол будет лежать…",
-      options: [
-        { value: "flat", label: "В квартире" },
-        { value: "house", label: "В частном доме" },
-        { value: "rent", label: "В квартире под аренду", note: "нужна износостойкость" },
-        { value: "commercial", label: "В коммерческом помещении", note: "43 класс и выше" },
-      ],
-    },
-    {
-      id: "warm",
-      title: "Тёплый пол…",
-      options: [
-        { value: "yes", label: "Уже есть" },
-        { value: "plan", label: "Планирую" },
-        { value: "no", label: "Не будет" },
-      ],
-    },
-    {
-      id: "extra",
-      title: "Кроме покрытия нужно…",
-      hint: "можно выбрать несколько",
-      multiple: true,
-      options: [
-        { value: "underlay", label: "Подложка" },
-        { value: "skirting", label: "Плинтус" },
-        { value: "thresholds", label: "Порожки" },
-        { value: "demolition", label: "Снять старый пол" },
-        { value: "leveling", label: "Выровнять основание" },
-        { value: "none", label: "Только покрытие" },
-      ],
-    },
-  ];
+  // Направление приезжает из разметки: у скрипта нет пропсов, а держать
+  // две сборки одного компонента ради одной строки — хуже.
+  const section = document.querySelector<HTMLElement>("[data-quiz]")!;
+  const config = QUIZ[section.dataset.direction ?? "poly"];
+  const STEPS = config.steps;
 
-  const GIFTS = [
-    { value: "laying", label: "Укладка в подарок", note: "при заказе от 30 м²" },
-    { value: "skirting", label: "Плинтус и порожки", note: "к покрытию" },
-    { value: "storage", label: "Хранение 3 месяца", note: "на нашем складе" },
-  ];
-
+  // Каналы связи одинаковы на всех формах сайта, поэтому живут здесь,
+  // а не в конфигурации направления.
   const CHANNELS = [
     { value: "telegram", label: "Telegram" },
     { value: "max", label: "MAX" },
     { value: "phone", label: "Звонок" },
   ];
 
-  // Площадь по числу комнат — типовые значения для предварительного расчёта.
-  const AREA: Record<string, number> = { "1": 18, "2": 32, "3": 45, all: 60, unknown: 35 };
-
-  // Работы. ПЛЕЙСХОЛДЕР до получения прайса от клиента (см. 02_QUESTIONS.md, п. 8).
-  const WORK = {
-    laying: [400, 600],
-    underlay: [120, 180],
-    skirting: [300, 400],
-    thresholds: [400, 600],
-    demolition: [150, 250],
-    leveling: [400, 700],
-  } as const;
-
-  type Row = [string, number, number, number, number];
+  type Row = (string | number)[];
   let data: { items: Row[]; price: { p25: number; median: number; p75: number } } | null = null;
 
-  const answers: Record<string, string | string[]> = { gift: "laying", channel: "telegram" };
+  const answers: Answers = { ...config.defaults };
   let index = 0;
 
   const box = document.querySelector<HTMLElement>(".quiz__box")!;
@@ -170,7 +110,7 @@ import Person from "./Person.astro";
   async function ensureData() {
     if (data) return data;
     try {
-      const response = await fetch("/data/quiz-poly.json");
+      const response = await fetch(config.dataUrl);
       if (!response.ok) return null;
       data = await response.json();
     } catch {
@@ -182,52 +122,45 @@ import Person from "./Person.astro";
   /** Сколько позиций каталога подходит под уже данные ответы. */
   function matching(): number {
     if (!data) return 0;
-    return data.items.filter((row) => {
-      const [kind, klass, warm] = row;
-      if (answers.kind && answers.kind !== "any" && kind !== answers.kind) return false;
-      if ((answers.warm === "yes" || answers.warm === "plan") && !warm) return false;
-      if (answers.place === "rent" || answers.place === "commercial") {
-        const enough = kind === "spc" ? klass >= 42 : klass >= 33;
-        if (!enough) return false;
-      }
-      return true;
-    }).length;
+    return data.items.filter((row) => config.matches(row, answers)).length;
   }
 
+  /** Минимум позиций, на которых квартили ещё что-то значат.
+      На выборке из трёх товаров «от и до» — это цены трёх товаров, а не рынка. */
+  const ENOUGH = 20;
+
   function estimate() {
-    const area = AREA[String(answers.rooms ?? "unknown")] ?? 35;
-    const pool = data!.items.filter((row) => {
-      if (answers.kind && answers.kind !== "any" && row[0] !== answers.kind) return false;
-      if ((answers.warm === "yes" || answers.warm === "plan") && !row[2]) return false;
-      return true;
-    });
-    const prices = (pool.length ? pool : data!.items).map((row) => row[4]).sort((a, b) => a - b);
+    const info = config.area(answers);
+
+    // Цены берём только у позиций с ценой за метр: у 633 плиток единица
+    // в выгрузке пустая, и одна цена за упаковку задирает верх вилки.
+    const metred = data!.items.filter(rowPerMetre);
+    const pool = metred.filter((row) => config.matches(row, answers));
+    const prices = (pool.length >= ENOUGH ? pool : metred).map(rowPrice).sort((a, b) => a - b);
     const low = prices[Math.floor(prices.length / 4)];
     const high = prices[Math.floor((prices.length * 3) / 4)];
 
-    const extras = Array.isArray(answers.extra) ? answers.extra : [];
-    const perimeter = Math.round(4 * Math.sqrt(area));
-    let workLow = WORK.laying[0] * area;
-    let workHigh = WORK.laying[1] * area;
-
-    if (extras.includes("underlay")) { workLow += WORK.underlay[0] * area; workHigh += WORK.underlay[1] * area; }
-    if (extras.includes("skirting")) { workLow += WORK.skirting[0] * perimeter; workHigh += WORK.skirting[1] * perimeter; }
-    if (extras.includes("thresholds")) { workLow += WORK.thresholds[0] * 2; workHigh += WORK.thresholds[1] * 4; }
-    if (extras.includes("demolition")) { workLow += WORK.demolition[0] * area; workHigh += WORK.demolition[1] * area; }
-    if (extras.includes("leveling")) { workLow += WORK.leveling[0] * area; workHigh += WORK.leveling[1] * area; }
-
-    const gift = answers.gift === "laying";
-    const materialLow = Math.round(low * area * 1.07);   // 7 % на подрезку
-    const materialHigh = Math.round(high * area * 1.07);
+    const [rawWorkLow, rawWorkHigh] = config.work(info, answers);
+    const gift = config.workIsGift(answers);
+    const materialLow = Math.round(low * info.material);
+    const materialHigh = Math.round(high * info.material);
+    const workLow = gift ? 0 : rawWorkLow;
+    const workHigh = gift ? 0 : rawWorkHigh;
+    // Ноль в работах бывает по двум разным причинам, и путать их нельзя:
+    // либо работы дарим по акции, либо человек их просто не заказывал.
+    const workNote = gift ? " — по акции в подарок" : workHigh === 0 ? " — вы считаете только материал" : "";
 
     return {
-      area,
+      area: info.area,
+      material: info.material,
+      note: info.note,
       materialLow,
       materialHigh,
-      workLow: gift ? 0 : Math.round(workLow),
-      workHigh: gift ? 0 : Math.round(workHigh),
-      totalLow: materialLow + (gift ? 0 : Math.round(workLow)),
-      totalHigh: materialHigh + (gift ? 0 : Math.round(workHigh)),
+      workLow,
+      workHigh,
+      workNote,
+      totalLow: materialLow + workLow,
+      totalHigh: materialHigh + workHigh,
     };
   }
 
@@ -325,14 +258,14 @@ import Person from "./Person.astro";
     }
     const count = matching();
     counter.textContent = count
-      ? `подходит ${money(count)} ${plural(count, ["покрытие", "покрытия", "покрытий"])} из каталога`
+      ? `подходит ${money(count)} ${plural(count, config.counterForms)} из каталога`
       : "";
   }
 
   function renderResult() {
     const result = estimate();
     title.textContent = "Ваш предварительный расчёт";
-    progress.textContent = `${result.area} м² · подходит ${money(matching())} `
+    progress.textContent = `${money(result.area)} м² · подходит ${money(matching())} `
       + plural(matching(), ["позиция", "позиции", "позиций"]);
     setBar(1);
     back.hidden = true;
@@ -342,10 +275,11 @@ import Person from "./Person.astro";
       <div class="quiz__result">
         <div class="quiz__sum">
           <p class="quiz__range num">${money(result.totalLow)} — ${money(result.totalHigh)} <span class="unit">₽</span></p>
+          <p class="quiz__metres small">${result.note}</p>
           <ul class="quiz__breakdown">
-            <li><span>Материал с запасом на подрезку</span>
+            <li><span>${config.materialLabel}</span>
                 <b class="num">${money(result.materialLow)}—${money(result.materialHigh)} <span class="unit">₽</span></b></li>
-            <li><span>Работы${result.workLow === 0 ? " — по акции в подарок" : ""}</span>
+            <li><span>Работы${result.workNote}</span>
                 <b class="num">${result.workLow === 0 ? "0" : `${money(result.workLow)}—${money(result.workHigh)}`} <span class="unit">₽</span></b></li>
           </ul>
           <p class="micro muted">Предварительный расчёт. Точная смета — после бесплатного замера.</p>
@@ -355,7 +289,7 @@ import Person from "./Person.astro";
           <fieldset class="quiz__fieldset">
             <legend class="eyebrow">выберите подарок</legend>
             <div class="quiz__options quiz__options--compact" data-gift>
-              ${GIFTS.map((gift) => optionMarkup(gift, answers.gift === gift.value)).join("")}
+              ${config.gifts.map((gift) => optionMarkup(gift, answers.gift === gift.value)).join("")}
             </div>
           </fieldset>
 
@@ -436,7 +370,7 @@ import Person from "./Person.astro";
       range.innerHTML = `${money(updated.totalLow)} — ${money(updated.totalHigh)} <span class="unit">₽</span>`;
       const work = body.querySelectorAll(".quiz__breakdown li")[1];
       if (work) {
-        work.innerHTML = `<span>Работы${updated.workLow === 0 ? " — по акции в подарок" : ""}</span>
+        work.innerHTML = `<span>Работы${updated.workNote}</span>
           <b class="num">${updated.workLow === 0 ? "0" : `${money(updated.workLow)}—${money(updated.workHigh)}`} <span class="unit">₽</span></b>`;
       }
     }
@@ -515,6 +449,15 @@ import Person from "./Person.astro";
 <style is:global>
   .quiz__intro { grid-column: span 12; display: grid; gap: var(--s-1); justify-items: start; }
   .quiz__accent { color: var(--accent-hover); }
+
+  /* Разбор метража. Ради него люди и проходят квиз: «пол 4 м² плюс стены 18 м²»
+     отвечает на вопрос, который человек не умеет посчитать сам. */
+  .quiz__metres {
+    margin-block: var(--s-1) var(--s-2);
+    color: var(--ink-2);
+    border-left: 3px solid var(--accent);
+    padding-left: var(--s-2);
+  }
 
   /* Обещание «без отправки контактов» — единственная строка на странице,
      которую человек должен прочитать до того, как начнёт отвечать. */

@@ -15,7 +15,7 @@
      "vendor": "Classen",
      "picture": "/showcase/56019_8_32_4V.webp",
      "params": {
-      "Формат": "605x282x8",
+      "Формат": "282×605",
       "Толщина, мм": "8",
       "Класс": "32",
       "Коллекция": "VisioGrande 8/32 4V",
@@ -31,7 +31,7 @@
      "vendor": "Classen",
      "picture": "/showcase/52343_8_32_4V.webp",
      "params": {
-      "Формат": "1285x192x8",
+      "Формат": "192×1285",
       "Толщина, мм": "8",
       "Класс": "32",
       "Коллекция": "Pool 8/32 4V",
@@ -47,7 +47,7 @@
      "vendor": "Classen",
      "picture": "/showcase/52355_8_32_4V.webp",
      "params": {
-      "Формат": "1285x192x8",
+      "Формат": "192×1285",
       "Толщина, мм": "8",
       "Класс": "32",
       "Коллекция": "Pool 8/32 4V",
@@ -63,7 +63,7 @@
      "vendor": "Alpine Floor",
      "picture": "/showcase/ECO_3-1.webp",
      "params": {
-      "Формат": "1219x184x3",
+      "Формат": "184×1219",
       "Толщина, мм": "3",
       "Класс": "34",
       "Коллекция": "Easy Line LVT",
@@ -87,7 +87,7 @@
      "vendor": "Most Floor",
      "picture": "/showcase/Most_Floor__11701.webp",
      "params": {
-      "Формат": "1215х240х12",
+      "Формат": "240×1215",
       "Толщина, мм": "12",
       "Класс": "33",
       "Коллекция": "Бриллиант 12/33",
@@ -103,7 +103,7 @@
      "vendor": "Most Floor",
      "picture": "/showcase/Most_Floor__11709.webp",
      "params": {
-      "Формат": "1215х240х12",
+      "Формат": "240×1215",
       "Толщина, мм": "12",
       "Класс": "33",
       "Коллекция": "Бриллиант 12/33",
@@ -119,7 +119,7 @@
      "vendor": "Egger PRO",
      "picture": "/showcase/EPL122-Large_833_4V.webp",
      "params": {
-      "Формат": "1292x246x8",
+      "Формат": "246×1292",
       "Толщина, мм": "8",
       "Класс": "33",
       "Коллекция": "Large 8/33 4V",
@@ -135,7 +135,7 @@
      "vendor": "Egger PRO",
      "picture": "/showcase/EPL123-Large_833_4V.webp",
      "params": {
-      "Формат": "1292x246x8",
+      "Формат": "246×1292",
       "Толщина, мм": "8",
       "Класс": "33",
       "Коллекция": "Large 8/33 4V",
@@ -152,14 +152,14 @@
    "items": [
     {
      "id": "ALX1071-3",
-     "name": "SPC AlixFloor, City Line, Дуб бергамо серый 1220 х 183 х 5 мм",
+     "name": "SPC AlixFloor, City Line, Дуб бергамо серый 1220×183×5 мм",
      "url": "https://moiremont18.ru/products/spc-alixfloor-city-line-dub-bergamo-seryi-1220-kh-183-kh-5-mm",
      "price": 2590,
      "unit": "м²",
      "vendor": "AlixFloor",
      "picture": "/showcase/ALX1071-3.webp",
      "params": {
-      "Формат": "1220 х 183 х 5 мм",
+      "Формат": "183×1220",
       "Толщина, мм": "5",
       "Класс": "43",
       "Коллекция": "City Line",
@@ -168,14 +168,14 @@
     },
     {
      "id": "ALX1078-4",
-     "name": "SPC AlixFloor, City Line, Дуб белый крафт 1220 х 183 х 5 мм",
+     "name": "SPC AlixFloor, City Line, Дуб белый крафт 1220×183×5 мм",
      "url": "https://moiremont18.ru/products/spc-alixfloor-city-line-dub-belyi-kraft-1220-kh-183-kh-5-mm",
      "price": 2590,
      "unit": "м²",
      "vendor": "AlixFloor",
      "picture": "/showcase/ALX1078-4.webp",
      "params": {
-      "Формат": "1220 х 183 х 5 мм",
+      "Формат": "183×1220",
       "Толщина, мм": "5",
       "Класс": "43",
       "Коллекция": "City Line",
@@ -184,14 +184,14 @@
     },
     {
      "id": "ALX1070-4",
-     "name": "SPC AlixFloor, Natural Line, Дуб медовый светлый 1220 х 183 х 5 мм",
+     "name": "SPC AlixFloor, Natural Line, Дуб медовый светлый 1220×183×5 мм",
      "url": "https://moiremont18.ru/products/spc-alixfloor-natural-line-dub-medovyi-svetlyi-1220-kh-183-kh-5-mm",
      "price": 2590,
      "unit": "м²",
      "vendor": "AlixFloor",
      "picture": "/showcase/ALX1070-4.webp",
      "params": {
-      "Формат": "1220 х 183 х 5 мм",
+      "Формат": "183×1220",
       "Толщина, мм": "5",
       "Класс": "43",
       "Коллекция": "Natural Line",
@@ -200,14 +200,14 @@
     },
     {
      "id": "ALX1562-8",
-     "name": "SPC AlixFloor, Natural Line, Дуб натуральный светлый 1220 х 183 х 5 мм",
+     "name": "SPC AlixFloor, Natural Line, Дуб натуральный светлый 1220×183×5 мм",
      "url": "https://moiremont18.ru/products/spc-alixfloor-natural-line-dub-naturalnyi-svetlyi-1220-kh-183-kh-5-mm",
      "price": 2590,
      "unit": "м²",
      "vendor": "AlixFloor",
      "picture": "/showcase/ALX1562-8.webp",
      "params": {
-      "Формат": "1220 х 183 х 5 мм",
+      "Формат": "183×1220",
       "Толщина, мм": "5",
       "Класс": "43",
       "Коллекция": "Natural Line",
@@ -231,7 +231,7 @@
      "vendor": "Alpine Floor",
      "picture": "/showcase/ECO_20-1.webp",
      "params": {
-      "Формат": "555x127x2,5",
+      "Формат": "127×555",
       "Толщина, мм": "2,5",
       "Класс": "43",
       "Коллекция": "Chevron Alpine LVT",
@@ -247,7 +247,7 @@
      "vendor": "Alpine Floor",
      "picture": "/showcase/ECO_20-2.webp",
      "params": {
-      "Формат": "555x127x2,5",
+      "Формат": "127×555",
       "Толщина, мм": "2,5",
       "Класс": "43",
       "Коллекция": "Chevron Alpine LVT",
@@ -263,7 +263,7 @@
      "vendor": "Tulesna",
      "picture": "/showcase/1005-01.webp",
      "params": {
-      "Формат": "600х125х4",
+      "Формат": "125×600",
       "Толщина, мм": "4",
       "Класс": "43",
       "Коллекция": "Art Parquet",
@@ -279,7 +279,7 @@
      "vendor": "Planker",
      "picture": "/showcase/3003.webp",
      "params": {
-      "Формат": "1220х128х4",
+      "Формат": "128×1220",
       "Толщина, мм": "4",
       "Класс": "43",
       "Коллекция": "Elegant Line",
@@ -298,56 +298,56 @@
    "items": [
     {
      "id": "GT120600203MR",
-     "name": "GT120600203MR Плитка грес глаз. Marmo_GT Белый 60*120 _ 1 \\43,2",
+     "name": "Керамогранит глазурованный Marmo Белый 60×120",
      "url": "https://moiremont18.ru/products/plitka-gres-glaz-marmo_gt-belyi-60-120",
      "price": 2590,
      "unit": "м²",
      "vendor": "Global Tile",
      "picture": "/showcase/GT120600203MR.webp",
      "params": {
-      "Формат": "1200х600х9",
+      "Формат": "600×1200",
       "Толщина, мм": "9",
       "Коллекция": "Marmo_GT"
      }
     },
     {
      "id": "VT60-R2112063",
-     "name": "Керамогранит Vitra Marble-X Бреча капрайа белый 600х1200 (1,44*46,08)",
+     "name": "Керамогранит Vitra Marble-X Бреча капрайа белый 600×1200 (1,44×46,08)",
      "url": "https://moiremont18.ru/products/keramogranit-vitra-marble-x-brecha-kapraia-belyi-600kh1200-1-44-46-08",
      "price": 3207,
      "unit": "м²",
      "vendor": "Vitra",
      "picture": "/showcase/VT60-R2112063.webp",
      "params": {
-      "Формат": "600х1200",
+      "Формат": "600×1200",
       "Толщина, мм": "9",
       "Коллекция": "Marble-X"
      }
     },
     {
      "id": "VT60-R2112065",
-     "name": "Керамогранит Vitra MarbleSet Иллюжн Темно-серый 600х1200 (1,44*46,08)",
+     "name": "Керамогранит Vitra MarbleSet Иллюжн Темно-серый 600×1200 (1,44×46,08)",
      "url": "https://moiremont18.ru/products/keramogranit-vitra-marbleset-illiuzhn-temno-seryi-600kh1200-1-44-46-08",
      "price": 3207,
      "unit": "м²",
      "vendor": "Vitra",
      "picture": "/showcase/VT60-R2112065.webp",
      "params": {
-      "Формат": "600х1200",
+      "Формат": "600×1200",
       "Толщина, мм": "9",
       "Коллекция": "MarbleSet"
      }
     },
     {
      "id": "VT60-R2112071",
-     "name": "Керамогранит Vitra Quarstone Антрацит 600х1200 (1,44*46,08)",
+     "name": "Керамогранит Vitra Quarstone Антрацит 600×1200 (1,44×46,08)",
      "url": "https://moiremont18.ru/products/keramogranit-vitra-quarstone-antratsit-600kh1200-1-44-46-08",
      "price": 2897,
      "unit": "м²",
      "vendor": "Vitra",
      "picture": "/showcase/VT60-R2112071.webp",
      "params": {
-      "Формат": "600х1200",
+      "Формат": "600×1200",
       "Толщина, мм": "9",
       "Коллекция": "Quarstone"
      }
@@ -358,62 +358,62 @@
    "slug": "small-format",
    "title": "Мелкий формат и «кабанчик»",
    "note": "Для акцентных стен и санузлов",
-   "price_from": 5556,
+   "price_from": 520,
    "items": [
     {
-     "id": "Equipe_31844",
-     "name": "Гранит керамический 31844 ARES Cotto 20х20 см",
-     "url": "https://moiremont18.ru/products/granit-keramicheskii-31844-ares-cotto-20kh20-sm",
-     "price": 5556,
-     "unit": "",
-     "vendor": "Equipe",
-     "picture": "/showcase/Equipe_31844.webp",
+     "id": "Staro_С0005803",
+     "name": "Плитка ARTISAN CREAM 20×20",
+     "url": "https://moiremont18.ru/products/plitka-artisan-cream-20x20",
+     "price": 3770,
+     "unit": "м²",
+     "vendor": "Smile Tile",
+     "picture": "/showcase/Staro__0005803.webp",
      "params": {
-      "Формат": "200х200",
-      "Толщина, мм": "8",
-      "Коллекция": "ARES"
-     }
-    },
-    {
-     "id": "Equipe_31845",
-     "name": "Гранит керамический 31845 ARES Natural 20х20 см",
-     "url": "https://moiremont18.ru/products/granit-keramicheskii-31845-ares-natural-20kh20-sm",
-     "price": 5556,
-     "unit": "",
-     "vendor": "Equipe",
-     "picture": "/showcase/Equipe_31845.webp",
-     "params": {
-      "Формат": "200х200",
-      "Толщина, мм": "8",
-      "Коллекция": "ARES"
-     }
-    },
-    {
-     "id": "Equipe_27572",
-     "name": "Гранит керамический 27572 ARGILE Concrete 10х10 см (98 кор./палл.)",
-     "url": "https://moiremont18.ru/products/granit-keramicheskii-27572-argile-concrete-10kh10-sm-98-kor-pall",
-     "price": 5957,
-     "unit": "",
-     "vendor": "Equipe",
-     "picture": "/showcase/Equipe_27572.webp",
-     "params": {
-      "Формат": "100х100",
+      "Формат": "200×200",
       "Толщина, мм": "9",
-      "Коллекция": "ARGILE"
+      "Коллекция": "Artisan"
      }
     },
     {
-     "id": "Equipe_27577",
-     "name": "Гранит керамический 27577 ARGILE Khaki 10х10 см (98 кор./палл.)",
-     "url": "https://moiremont18.ru/products/granit-keramicheskii-27577-argile-khaki-10kh10-sm-98-kor-pall",
-     "price": 5957,
-     "unit": "",
-     "vendor": "Equipe",
-     "picture": "/showcase/Equipe_27577.webp",
+     "id": "Staro_С0005813",
+     "name": "Плитка ARTISAN BLUE 20×20",
+     "url": "https://moiremont18.ru/products/plitka-artisan-blue-20x20",
+     "price": 3770,
+     "unit": "м²",
+     "vendor": "Smile Tile",
+     "picture": "/showcase/Staro__0005813.webp",
      "params": {
-      "Формат": "100х100",
+      "Формат": "200×200",
       "Толщина, мм": "9",
-      "Коллекция": "ARGILE"
+      "Коллекция": "Artisan"
+     }
+    },
+    {
+     "id": "Staro_С0005781",
+     "name": "Плитка ELEGANCE BASE 20×20",
+     "url": "https://moiremont18.ru/products/plitka-elegance-base-20x20",
+     "price": 3770,
+     "unit": "м²",
+     "vendor": "Smile Tile",
+     "picture": "/showcase/Staro__0005781.webp",
+     "params": {
+      "Формат": "200×200",
+      "Толщина, мм": "8",
+      "Коллекция": "Chalet"
+     }
+    },
+    {
+     "id": "Staro_С0005791",
+     "name": "Плитка ELEGANCE BORDER 20×20",
+     "url": "https://moiremont18.ru/products/plitka-elegance-border-20x20",
+     "price": 520,
+     "unit": "шт",
+     "vendor": "Smile Tile",
+     "picture": "/showcase/Staro__0005791.webp",
+     "params": {
+      "Формат": "200×200",
+      "Толщина, мм": "8",
+      "Коллекция": "Chalet"
      }
     }
    ]
@@ -426,58 +426,122 @@
    "items": [
     {
      "id": "436229",
-     "name": "Керамогранит French Smoke светло-серый 60x60 Полированный",
+     "name": "Керамогранит French Smoke светло-серый 60×60 Полированный",
      "url": "https://moiremont18.ru/products/french-smoke-keramogranit-svetlo-seryi-60x60-polirovannyi-1-1",
      "price": 2330,
      "unit": "м²",
      "vendor": "Laparet",
      "picture": "/showcase/436229.webp",
      "params": {
-      "Формат": "600х600",
+      "Формат": "600×600",
       "Толщина, мм": "8,6",
       "Коллекция": "French"
      }
     },
     {
      "id": "G-1101/CR/600x600x9",
-     "name": "Керамогранит 600*600 Beton Бежевый С Sugar-Эффектом G-1101/Cr",
+     "name": "Керамогранит 600×600 Beton Бежевый С Sugar-Эффектом G-1101/Cr",
      "url": "https://moiremont18.ru/products/keramogranit-600-600-beton-bezhevyi-s-sugar-effektom-g-1101-cr",
      "price": 2294,
      "unit": "м²",
      "vendor": "Grasaro",
      "picture": "/showcase/G-1101_CR_600x600x9.webp",
      "params": {
-      "Формат": "600х600",
+      "Формат": "600×600",
       "Толщина, мм": "10",
       "Коллекция": "Beton"
      }
     },
     {
      "id": "G-1105/CR/600x600x9",
-     "name": "Керамогранит 600*600 Beton Серо-Бежевый Sugar-Эффектом G-1105/Cr",
+     "name": "Керамогранит 600×600 Beton Серо-Бежевый Sugar-Эффектом G-1105/Cr",
      "url": "https://moiremont18.ru/products/keramogranit-600-600-beton-sero-bezhevyi-sugar-effektom-g-1105-cr",
      "price": 2294,
      "unit": "м²",
      "vendor": "Grasaro",
      "picture": "/showcase/G-1105_CR_600x600x9.webp",
      "params": {
-      "Формат": "600х600",
+      "Формат": "600×600",
       "Толщина, мм": "10",
       "Коллекция": "Beton"
      }
     },
     {
      "id": "GP40COT01R",
-     "name": "Corten Light GP40COT01R Керамогранит матовый 600*600*9,5 (4 шт в уп/43,2 м в пал)",
+     "name": "Corten Light GP40COT01R Керамогранит матовый 600×600×9,5 (4 шт в уп/43,2 м в пал)",
      "url": "https://moiremont18.ru/products/corten-light-gp40cot01r-keramogranit-matovyi-600-600-9-5-4-sht-v-up-43-2-m-v-pal",
      "price": 2290,
      "unit": "м²",
      "vendor": "New Trend",
      "picture": "/showcase/GP40COT01R.webp",
      "params": {
-      "Формат": "600х600",
+      "Формат": "600×600",
       "Толщина, мм": "9,5",
       "Коллекция": "Corten"
+     }
+    }
+   ]
+  },
+  {
+   "slug": "frost",
+   "title": "Морозостойкий — крыльцо, балкон, фасад",
+   "note": "Выдерживает улицу и перепады температур",
+   "price_from": 2390,
+   "items": [
+    {
+     "id": "GT120601406MR",
+     "name": "Керамогранит глазурованный Bliss Серый 60×120",
+     "url": "https://moiremont18.ru/products/plitka-gres-glaz-bliss_gt-seryi-60-120",
+     "price": 2390,
+     "unit": "м²",
+     "vendor": "Global Tile",
+     "picture": "/showcase/GT120601406MR.webp",
+     "params": {
+      "Формат": "600×1200",
+      "Толщина, мм": "9,5",
+      "Коллекция": "Bliss_GT"
+     }
+    },
+    {
+     "id": "GT120600906MCR",
+     "name": "Керамогранит глазурованный Onda Светло-сер. 60×120 карвинг",
+     "url": "https://moiremont18.ru/products/plitka-gres-glaz-onda_gt-svetlo-ser-60-120-karving",
+     "price": 2390,
+     "unit": "м²",
+     "vendor": "Global Tile",
+     "picture": "/showcase/GT120600906MCR.webp",
+     "params": {
+      "Формат": "600×1200",
+      "Толщина, мм": "9",
+      "Коллекция": "Onda_GT"
+     }
+    },
+    {
+     "id": "GT120603201MR",
+     "name": "Керамогранит глазурованный Vibe Серый 60×120",
+     "url": "https://moiremont18.ru/products/plitka-gres-glaz-vibe_gt-seryi-60-120",
+     "price": 2390,
+     "unit": "м²",
+     "vendor": "Global Tile",
+     "picture": "/showcase/GT120603201MR.webp",
+     "params": {
+      "Формат": "600×1200",
+      "Толщина, мм": "9",
+      "Коллекция": "Vibe_GT"
+     }
+    },
+    {
+     "id": "GT120603205MR",
+     "name": "Керамогранит глазурованный Vibe Черный 60×120",
+     "url": "https://moiremont18.ru/products/plitka-gres-glaz-vibe_gt-chernyi-60-120",
+     "price": 2490,
+     "unit": "м²",
+     "vendor": "Global Tile",
+     "picture": "/showcase/GT120603205MR.webp",
+     "params": {
+      "Формат": "600×1200",
+      "Толщина, мм": "9",
+      "Коллекция": "Vibe_GT"
      }
     }
    ]

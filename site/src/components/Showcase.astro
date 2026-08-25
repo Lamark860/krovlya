@@ -15,9 +15,12 @@ import { strikePrice } from "../lib/pricing";
 interface Props {
   direction: "poly" | "plitka";
   catalog?: string;
+  eyebrow: string;
+  title: string;
+  lead: string;
 }
 
-const { direction, catalog = "/catalog" } = Astro.props;
+const { direction, catalog = "/catalog", eyebrow, title, lead } = Astro.props;
 const blocks = (showcase as Record<string, any[]>)[direction] ?? [];
 
 const items = blocks.flatMap((block) => block.items.slice(0, 2)).slice(0, 8);
@@ -26,11 +29,7 @@ const money = (value: number) => value.toLocaleString("ru-RU");
 
 <section class="showcase" id="catalog">
   <div class="layout">
-    <SectionIntro
-      eyebrow="со склада и под заказ"
-      title="Покрытия в наличии — с укладкой в подарок"
-      lead="Показаны позиции со склада. В каталоге больше двух тысяч покрытий: подберём под задачу и бюджет на замере."
-    />
+    <SectionIntro eyebrow={eyebrow} title={title} lead={lead} />
 
     {items.map((item: any) => (
       <article class="tile card">
@@ -51,8 +50,12 @@ const money = (value: number) => value.toLocaleString("ru-RU");
           <span class="card__name">{item.name}</span>
         </button>
 
+        {/* У полов характеристика — класс износостойкости, у плитки её нет:
+            там человеку важен формат. Берём то, что заполнено. */}
         <p class="card__meta muted">
-          {[item.vendor, item.params?.["Класс"] && `${item.params["Класс"]} класс`,
+          {[item.vendor,
+            item.params?.["Класс"] && `${item.params["Класс"]} класс`,
+            !item.params?.["Класс"] && item.params?.["Формат"],
             item.params?.["Толщина, мм"] && `${item.params["Толщина, мм"]} мм`]
             .filter(Boolean).join(" · ")}
         </p>

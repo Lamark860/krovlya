@@ -17,6 +17,10 @@ import re
 from collections import Counter
 from pathlib import Path
 
+# Лежит рядом: при запуске «python3 pipeline/build_catalog_page.py»
+# каталог скрипта и так первый в sys.path.
+from filters import drop_piece_decor, is_product
+
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "data" / "catalog.json"
 PHOTOS = ROOT / "site" / "public" / "showcase"
@@ -25,15 +29,6 @@ OUT = ROOT / "site" / "public" / "data"
 # Сколько брендов показываем вкладками — остальные уходят в «Другие».
 # Двенадцать вкладок ещё читаются строкой, тридцать превращаются в кашу.
 TOP_BRANDS = 12
-
-# Сопутствующее — не напольное покрытие. Сортировка идёт по цене, и без этого
-# каталог открывается четырьмя листами подложки: они просто самые дешёвые.
-EXCLUDE_GROUPS = {"Подложка и комплектующие"}
-
-# Часть подложек лежит прямо в группе «Ламинат» — это грязь в выгрузке,
-# а не наша ошибка (вопрос по каталогу к клиенту). Отсекаем по названию.
-EXCLUDE_NAME = re.compile(r"^\s*подложк", re.IGNORECASE)
-
 
 # Кириллица в адресе превращается в проценты (%D0%9B%D0%B0…) — в объявлении это
 # выглядит мусором, а Директ показывает адрес человеку. Поэтому транслитерируем.
@@ -78,9 +73,9 @@ def build(direction: str) -> dict:
     items = [
         i for i in json.loads(CATALOG.read_text(encoding="utf-8"))
         if i["direction"] == direction and i["price"] and i["pictures"]
-        and i["group"] not in EXCLUDE_GROUPS
-        and not EXCLUDE_NAME.match(i["name"])
+        and is_product(i)
     ]
+    items = drop_piece_decor(items)
     items.sort(key=lambda i: i["price"])
 
     brands = named([b for b, _ in Counter(i["vendor"] for i in items if i["vendor"]).most_common(TOP_BRANDS)])

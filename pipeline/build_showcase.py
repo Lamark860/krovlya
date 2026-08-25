@@ -14,12 +14,16 @@ import statistics
 from collections import defaultdict
 from pathlib import Path
 
+# Лежит рядом: при запуске «python3 pipeline/build_showcase.py»
+# каталог скрипта и так первый в sys.path.
+from filters import drop_piece_decor, is_product
+
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "data" / "catalog.json"
 # Пишем внутрь site/: контекст сборки контейнера — папка site, снаружи файлы не видны
 OUT = ROOT / "site" / "src" / "data" / "showcase.json"
 # Данные счётчика грузятся лениво при открытии квиза, поэтому лежат в public/
-QUIZ_OUT = ROOT / "site" / "public" / "data" / "quiz-poly.json"
+QUIZ_DIR = ROOT / "site" / "public" / "data"
 # Сюда fetch_images.py складывает скачанные и пережатые фото.
 PHOTOS = ROOT / "site" / "public" / "showcase"
 
@@ -79,13 +83,24 @@ SELECTIONS = {
             "slug": "small-format",
             "title": "Мелкий формат и «кабанчик»",
             "note": "Для акцентных стен и санузлов",
-            "match": lambda i: i["subgroup"] == "Мелкоформатная плитка",
+            "match": lambda i: i["subgroup"] == "Мелкий формат",
         },
         {
             "slug": "600x600",
             "title": "Керамогранит 600×600",
             "note": "Универсальный формат для пола",
             "match": lambda i: i["subgroup"] == "600×600",
+        },
+        {
+            # Четвёртый блок нужен арифметически: витрина берёт по два товара
+            # из подборки и ждёт восемь, а подборок у плитки было три.
+            # Морозостойкость — единственное свойство плитки в выгрузке, которое
+            # отвечает на реальный вопрос покупателя («а на крыльцо можно?»),
+            # и заполнено оно у 1 904 позиций.
+            "slug": "frost",
+            "title": "Морозостойкий — крыльцо, балкон, фасад",
+            "note": "Выдерживает улицу и перепады температур",
+            "match": lambda i: i["params"].get("Морозостойкий", "").startswith("Да"),
         },
     ],
 }
@@ -94,6 +109,10 @@ SELECTIONS = {
 def score(item, low, high):
     """Насколько товар «показателен»: фото, описание, свойства, цена из середины."""
     points = 0
+    # Без единицы измерения карточка показывает голое «5 556 ₽» рядом с «2 590 ₽/м²»,
+    # и человек не понимает, за что цена. В каталоге такие позиции остаются
+    # (их 633, и врать про «м²» мы не будем), но витрина — лицо страницы.
+    points += 4 if item["unit"] else -8
     points += min(len(item["pictures"]), 3) * 2      # несколько ракурсов — плюс
     points += 3 if len(item["description"]) > 120 else 0
     points += min(len(item["params"]), 8)
@@ -105,8 +124,13 @@ def score(item, low, high):
     return points
 
 
-def pick(items, selection):
-    pool = [i for i in items if selection["match"](i) and i["pictures"]]
+def pick(items, selection, taken=()):
+    """taken — id, уже занятые предыдущими подборками.
+
+    Без этого блоки пересекаются: морозостойкий керамогранит 600×600 подходит
+    сразу двум условиям, и один товар вставал в витрину дважды.
+    """
+    pool = [i for i in items if selection["match"](i) and i["pictures"] and i["id"] not in taken]
     if not pool:
         return []
     prices = sorted(i["price"] for i in pool)
@@ -126,40 +150,84 @@ def pick(items, selection):
     return chosen
 
 
-def build_quiz_data(items):
-    """Компактный срез для живого счётчика в квизе.
+# Подгруппы плитки → короткие коды для счётчика. Строкой «Крупноформат 600×1200
+# и больше» в JSON на 2 665 позиций набегает лишних 60 КБ на пустом месте.
+PLITKA_SUBS = {
+    "Крупноформат 600×1200 и больше": "large",
+    "600×600": "600",
+    "Мелкий формат": "small",
+    "Другие форматы": "other",
+}
 
-    Счётчик показывает, сколько позиций осталось после каждого ответа, поэтому число
-    обязано считаться по той же выборке, что уходит в фид и в каталог — иначе
-    получится маркетинговая цифра, а мы обещаем честную.
-    Кортеж: [тип, класс, тёплый пол, влагостойкий, цена].
+
+def quiz_row(item):
+    """Одна строка среза — своя для каждого направления.
+
+    Полы: [тип, класс, тёплый пол, влагостойкий, за_метр, цена].
+    Плитка: [материал, формат, морозостойкий, за_метр, цена] — классов
+    и влагостойкости в выгрузке у плитки нет (заполнены у двух товаров из 2 665),
+    зато есть морозостойкость: по ней и отвечаем на «а на крыльцо можно?».
+
+    Цена всегда последняя, признак «за_метр» — перед ней. Признак нужен, потому что
+    у 633 позиций плитки единица измерения в выгрузке пустая, и непонятно, метр это
+    или упаковка. Счётчик такие позиции считает (они реально есть в каталоге),
+    а в вилку расчёта они не идут: диапазон «от и до» человек читает как рубли
+    за метр, и одна цена за упаковку задирает верх на ровном месте.
     """
-    rows = []
-    for item in items:
-        if item["direction"] != "poly":
-            continue
+    params = item["params"]
+    if item["direction"] == "poly":
         if item["group"] == "Ламинат":
             kind = "laminate"
         elif item["group"] == "Кварцвинил и ПВХ":
             kind = "spc"
         else:
             kind = "other"
-        klass = re.sub(r"\D", "", item["params"].get("Класс", "")) or "0"
-        warm = 1 if item["params"].get("Тёплый пол", "").startswith("Да") else 0
-        wet = 1 if item["params"].get("Влагостойкий", "").startswith("Да") else 0
-        rows.append([kind, int(klass), warm, wet, item["price"]])
+        klass = re.sub(r"\D", "", params.get("Класс", "")) or "0"
+        return [
+            kind,
+            int(klass),
+            1 if params.get("Тёплый пол", "").startswith("Да") else 0,
+            1 if params.get("Влагостойкий", "").startswith("Да") else 0,
+            1 if item["unit"] == "м²" else 0,
+            item["price"],
+        ]
 
-    prices = sorted(r[4] for r in rows)
-    QUIZ_OUT.parent.mkdir(parents=True, exist_ok=True)
-    QUIZ_OUT.write_text(json.dumps({
-        "items": rows,
-        "price": {
-            "p25": prices[len(prices) // 4],
-            "median": prices[len(prices) // 2],
-            "p75": prices[3 * len(prices) // 4],
-        },
-    }, ensure_ascii=False), encoding="utf-8")
-    print(f"данные квиза: {len(rows)} позиций → {QUIZ_OUT.relative_to(ROOT)}")
+    return [
+        "gres" if item["group"] == "Керамогранит" else "tile",
+        PLITKA_SUBS.get(item["subgroup"], "other"),
+        1 if params.get("Морозостойкий", "").startswith("Да") else 0,
+        1 if item["unit"] == "м²" else 0,
+        item["price"],
+    ]
+
+
+def build_quiz_data(items):
+    """Компактный срез для живого счётчика в квизе — по файлу на направление.
+
+    Счётчик показывает, сколько позиций осталось после каждого ответа, поэтому число
+    обязано считаться по той же выборке, что уходит в фид и в каталог — иначе
+    получится маркетинговая цифра, а мы обещаем честную. Отсюда же и is_product:
+    клин за 78 ₽ в каталоге не показан, значит и в 25-м процентиле квиза
+    ему делать нечего — иначе расчёт начнётся со слов «плитка от 78 ₽/м²».
+    """
+    QUIZ_DIR.mkdir(parents=True, exist_ok=True)
+    for direction in SELECTIONS:
+        pool = drop_piece_decor([i for i in items
+                                 if i["direction"] == direction and is_product(i)])
+        rows = [quiz_row(i) for i in pool]
+        prices = sorted(r[-1] for r in rows if r[-2])
+        path = QUIZ_DIR / f"quiz-{direction}.json"
+        path.write_text(json.dumps({
+            "items": rows,
+            "price": {
+                "p25": prices[len(prices) // 4],
+                "median": prices[len(prices) // 2],
+                "p75": prices[3 * len(prices) // 4],
+            },
+        }, ensure_ascii=False), encoding="utf-8")
+        print(f"данные квиза «{direction}»: {len(rows)} позиций "
+              f"({len(prices)} с ценой за м²), "
+              f"{path.stat().st_size / 1024:.0f} КБ → {path.relative_to(ROOT)}")
 
 
 def main():
@@ -170,8 +238,10 @@ def main():
     for direction, selections in SELECTIONS.items():
         pool = [i for i in items if i["direction"] == direction]
         blocks = []
+        taken: set[str] = set()
         for selection in selections:
-            chosen = pick(pool, selection)
+            chosen = pick(pool, selection, taken)
+            taken.update(i["id"] for i in chosen)
             if not chosen:
                 print(f"  ⚠ подборка «{selection['title']}» пуста — проверьте условие")
                 continue
