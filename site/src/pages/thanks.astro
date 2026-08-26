@@ -41,7 +41,8 @@ import { company } from "../data/company";
         <h2 class="thanks__side-title">Пока ждёте звонка</h2>
         <p class="muted">Посмотрите, как выглядят наши объекты и шоурум — там же можно потрогать материал вживую.</p>
         <p class="thanks__links">
-          <a class="btn btn--ghost" href={company.vk} target="_blank" rel="noopener">Работы во ВКонтакте</a>
+          <a class="btn btn--ghost" href={company.vk} target="_blank" rel="noopener"
+            data-analytics="messenger" data-channel="vk" data-placement="thanks">Работы во ВКонтакте</a>
         </p>
         <p class="muted thanks__address">
           Шоурум: {company.showroom.address}<br />{company.showroom.hours}
@@ -52,7 +53,8 @@ import { company } from "../data/company";
         <p class="eyebrow">ваш файл готов</p>
         <h2 class="thanks__side-title">Сравнение ламината и кварцвинила</h2>
         <p class="muted">Ссылка действует 24 часа.</p>
-        <p><a class="btn" data-download-link href="#">Скачать PDF</a></p>
+        <p><a class="btn" data-download-link href="#"
+              data-analytics="download" data-file-name="lead_magnet" data-file-type="pdf">Скачать PDF</a></p>
       </div>
     </div>
   </main>

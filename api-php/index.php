@@ -183,10 +183,29 @@ function send_telegram(array $config, string $text): bool
 /**
  * Письмо шлём штатным sendmail хостинга: у него есть PTR и SPF домена,
  * поэтому оно не падает в спам — ради этого и переезжали с VPS.
+ *
+ * Получателей несколько: ящик клиента и ящик Максима. Каждому — отдельное
+ * письмо, а не один конверт со списком. Причина простая: Яндекс и mail.ru
+ * заворачивают письмо на всех адресатов, если хоть один им не понравился,
+ * и тогда заявку не увидит никто. Отдельными письмами теряется максимум одно.
  */
+function mail_recipients(array $config): array
+{
+    $raw = $config['mail_to'] ?? '';
+    // В конфиге допустимы и строка «a@x, b@y», и массив — так проще править руками.
+    $list = is_array($raw) ? $raw : preg_split('/[,;\s]+/', (string) $raw);
+    $clean = [];
+    foreach ($list as $address) {
+        $address = trim((string) $address);
+        if ($address !== '' && filter_var($address, FILTER_VALIDATE_EMAIL)) $clean[] = $address;
+    }
+    return array_values(array_unique($clean));
+}
+
 function send_mail(array $config, string $text, int $id): bool
 {
-    if (empty($config['mail_to']) || empty($config['mail_from'])) return false;
+    $recipients = mail_recipients($config);
+    if (!$recipients || empty($config['mail_from'])) return false;
 
     $subject = "Заявка №$id с сайта";
     $headers = [
@@ -198,9 +217,15 @@ function send_mail(array $config, string $text, int $id): bool
     // Кириллица в теме письма живёт только в MIME-кодировке, иначе поедет в кракозябры.
     $encoded = '=?UTF-8?B?' . base64_encode($subject) . '?=';
 
-    $ok = @mail($config['mail_to'], $encoded, $text, implode("\r\n", $headers));
-    if (!$ok) error_log('krovlya: sendmail не принял заявку');
-    return $ok;
+    $delivered = false;
+    foreach ($recipients as $address) {
+        if (@mail($address, $encoded, $text, implode("\r\n", $headers))) {
+            $delivered = true;
+        } else {
+            error_log("krovlya: sendmail не принял заявку №$id для $address");
+        }
+    }
+    return $delivered;
 }
 
 // --- Маршрутизация -------------------------------------------------------

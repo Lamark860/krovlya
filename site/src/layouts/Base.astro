@@ -51,13 +51,47 @@ const indexable = import.meta.env.PUBLIC_INDEXABLE === "1";
       })();
     </script>
 
-    <!-- Слот под счётчик Яндекс.Метрики: код Максим пришлёт позже -->
-    <!-- METRIKA -->
+    <!-- Яндекс.Метрика, счётчик 111958532. Код прислан заказчиком 26.08 как есть,
+         менять его настройки нельзя: по ним же собран доступ в Директе.
+         Стоит на всех страницах — иначе не считается путь «главная → посадочная». -->
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      (function (m, e, t, r, i, k, a) {
+        m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
+        m[i].l = 1 * new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+          if (document.scripts[j].src === r) return;
+        }
+        k = e.createElement(t); a = e.getElementsByTagName(t)[0];
+        k.async = 1; k.src = r; a.parentNode.insertBefore(k, a);
+      })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js?id=111958532", "ym");
+
+      ym(111958532, "init", {
+        ssr: true,
+        webvisor: true,
+        clickmap: true,
+        ecommerce: "dataLayer",
+        referrer: document.referrer,
+        url: location.href,
+        accurateTrackBounce: true,
+        trackLinks: true,
+      });
+    </script>
   </head>
   <body>
+    <noscript><div><img src="https://mc.yandex.ru/watch/111958532" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
     <slot />
 
     <!-- Слот под виджет чата из amoCRM: подключим, когда решим, нужен ли -->
     <!-- CHAT -->
+
+    <script>
+      // Клики, показы форм, глубина просмотра, рекламные метки — всё, что
+      // не привязано к конкретному компоненту. Цели заявок отправляют
+      // сами обработчики форм: только там видно ответ сервера.
+      import { startAnalytics } from "../scripts/analytics";
+      startAnalytics();
+    </script>
   </body>
 </html>

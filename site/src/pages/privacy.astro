@@ -27,7 +27,8 @@ import { company } from "../data/company";
         </p>
         <p class="muted">
           Оператор: {company.legalName}, ИНН {company.inn}, ОГРН {company.ogrn}.
-          Адрес: {company.showroom.address}. Контакт для обращений: <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>.
+          Адрес: {company.showroom.address}. Контакт для обращений: <a class="phone" href={`tel:${company.phoneHref}`}
+            data-analytics="phone" data-placement="privacy">{company.phone}</a>.
         </p>
         <p class="muted">
           Оставляя контакты в формах на сайте, вы соглашаетесь на обработку указанных данных

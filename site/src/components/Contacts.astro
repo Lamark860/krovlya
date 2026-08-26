@@ -32,7 +32,7 @@ const MAP = "https://yandex.ru/map-widget/v1/?oid=72128044422&ol=biz&z=16";
         </div>
         <div class="contacts__row">
           <dt class="muted">Телефон</dt>
-          <dd><a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a></dd>
+          <dd><a class="phone" href={`tel:${company.phoneHref}`} data-analytics="phone" data-placement="contacts">{company.phone}</a></dd>
         </div>
         <div class="contacts__row">
           <dt class="muted">Юрлицо</dt>
@@ -41,7 +41,9 @@ const MAP = "https://yandex.ru/map-widget/v1/?oid=72128044422&ol=biz&z=16";
       </dl>
 
       <p class="contacts__actions">
-        <a class="btn" href="#lead">Получить консультацию</a>
+        <a class="btn" href="#lead"
+           data-analytics="cta" data-cta-id="contacts_consult"
+           data-placement="contacts" data-target="form">Получить консультацию</a>
         <a class="btn btn--ghost" href={company.yandex.url} target="_blank" rel="noopener">Смотреть отзывы</a>
       </p>
     </div>

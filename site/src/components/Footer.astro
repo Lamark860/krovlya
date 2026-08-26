@@ -10,10 +10,11 @@ import { company } from "../data/company";
         <p class="muted footer__line">{company.showroom.address}</p>
         <p class="muted footer__line">{company.showroom.hours}</p>
         <p class="footer__line">
-          <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+          <a class="phone" href={`tel:${company.phoneHref}`} data-analytics="phone" data-placement="footer">{company.phone}</a>
         </p>
         <p class="footer__line">
-          <a href={company.vk} target="_blank" rel="noopener">Наши работы во ВКонтакте</a>
+          <a href={company.vk} target="_blank" rel="noopener"
+             data-analytics="messenger" data-channel="vk" data-placement="footer">Наши работы во ВКонтакте</a>
         </p>
       </div>
 

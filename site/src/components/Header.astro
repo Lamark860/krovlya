@@ -22,10 +22,13 @@ const { cta = "/poly#lead" } = Astro.props;
 
     <div class="header__contacts">
       <span class="header__showroom muted">{company.showroom.address}</span>
-      <a class="header__phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+      <a class="header__phone" href={`tel:${company.phoneHref}`}
+         data-analytics="phone" data-placement="header">{company.phone}</a>
       {/* Было «Бесплатный замер». По правке п. 5 замер уходит с кнопок,
           но «бесплатно» в шапке терять жалко — оно и есть повод нажать. */}
-      <a class="btn btn--ghost header__cta" href={cta}>Бесплатная консультация</a>
+      <a class="btn btn--ghost header__cta" href={cta}
+         data-analytics="cta" data-cta-id="header_consult"
+         data-placement="header" data-target="form">Бесплатная консультация</a>
     </div>
   </div>
 </header>

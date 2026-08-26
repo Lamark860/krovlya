@@ -11,14 +11,35 @@
  *   — `data-channel` на самой форме — «в 1 клик», там только телефон.
  */
 
+import { leadError, leadSuccess, trackingParams, validationError, watchForm } from "./analytics";
+
 const HINTS: Record<string, [подпись: string, подсказка: string]> = {
   telegram: ["Введите телефон или @username в Telegram", "+7 или @username"],
   max: ["Введите номер телефона в MAX", "+7 "],
   phone: ["Введите ваш телефон", "+7 "],
 };
 
+/**
+ * Проверка контакта на клиенте. Сервер проверяет то же самое и остаётся
+ * последним словом — здесь это нужно, чтобы человек увидел ошибку сразу
+ * и чтобы в Метрику ушло `form_validation_error` с типом, а не молчание.
+ */
+function contactProblem(value: string, channel: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return "empty_required_field";
+  if (channel === "telegram" && /^@[\w\d_]{4,32}$/.test(trimmed)) return null;
+  const digits = trimmed.replace(/\D/g, "");
+  return digits.length < 10 || digits.length > 11 ? "invalid_phone" : null;
+}
+
+const PROBLEM_TEXT: Record<string, string> = {
+  empty_required_field: "Оставьте номер телефона",
+  invalid_phone: "Проверьте номер телефона",
+};
+
 function bind(form: HTMLFormElement) {
   const startedAt = Date.now();
+  watchForm(form);
   const contact = form.querySelector<HTMLInputElement>("[data-contact]")!;
   const label = form.querySelector<HTMLElement>("[data-contact-label]");
   const buttons = form.querySelectorAll<HTMLButtonElement>(".channel__btn");
@@ -64,6 +85,18 @@ function bind(form: HTMLFormElement) {
     event.preventDefault();
     const button = form.querySelector("button[type=submit]") as HTMLButtonElement;
     const error = form.querySelector<HTMLElement>("[data-error]")!;
+
+    // Формат номера браузер не проверяет: для него `+7 (12` — обычный текст.
+    // Ловим до отправки, иначе человек получает отказ от сервера на ровном месте.
+    const problem = contactProblem(contact.value, channel);
+    if (problem) {
+      validationError(form, "contact", problem);
+      error.textContent = PROBLEM_TEXT[problem];
+      error.hidden = false;
+      contact.focus();
+      return;
+    }
+
     button.disabled = true;
     error.hidden = true;
 
@@ -81,7 +114,10 @@ function bind(form: HTMLFormElement) {
       geo: field("geo"),
       source: field("source") || null,           // товар или кейс, из которого пришли
       magnet: form.dataset.magnet || null,
-      utm: Object.fromEntries(new URLSearchParams(location.search)),
+      // Метки визита плюс сохранённые ранее: заявку могли оставить и через неделю
+      // после клика по объявлению. Остальные параметры адреса тоже забираем —
+      // по ним видно, с какой выборки каталога пришёл человек.
+      utm: { ...Object.fromEntries(new URLSearchParams(location.search)), ...trackingParams() },
     };
 
     try {
@@ -93,8 +129,13 @@ function bind(form: HTMLFormElement) {
       const json = await response.json();
       if (!response.ok) throw new Error(json.error ?? "Не удалось отправить");
       sessionStorage.setItem("lead", JSON.stringify({ name: payload.name, channel, download: json.download }));
+      // Цель — только здесь, после ответа сервера. Ждём отправку события:
+      // переход на «Спасибо» иначе обрывает запрос к Метрике на полуслове.
+      await leadSuccess(form, { channel });
       location.href = "/thanks";
     } catch (problem) {
+      const failed = problem instanceof TypeError;   // fetch не дошёл до сервера
+      leadError(form, failed ? "network_error" : "server_error");
       error.textContent = problem instanceof Error ? problem.message : "Не удалось отправить";
       error.hidden = false;
       button.disabled = false;

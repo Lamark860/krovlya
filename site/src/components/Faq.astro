@@ -23,8 +23,10 @@ const schema = {
     <SectionIntro eyebrow="частые вопросы" title="Что обычно спрашивают" />
 
     <div class="tile faq__list">
-      {items.map((item) => (
-        <details class="faq__item">
+      {items.map((item, i) => (
+        <details class="faq__item"
+                 data-faq-id={`faq_${String(i + 1).padStart(2, "0")}`}
+                 data-question-number={i + 1}>
           <summary>{item.q}</summary>
           <p class="muted">{item.a}</p>
         </details>

@@ -39,7 +39,9 @@ const WHEN = [
         вместе с укладкой. Звонок ни к чему не обязывает.
       </p>
 
-      <form class="consult__form" data-lead data-channel="phone">
+      <form class="consult__form" data-lead data-channel="phone"
+            data-analytics-form="lead" data-form-id="footer_form"
+            data-placement="footer" data-lead-type="consultation">
         <label class="field consult__field">
           <span class="field__label">В какое время вам позвонить?</span>
           <select class="control" name="source">
@@ -61,7 +63,8 @@ const WHEN = [
       </form>
 
       <p class="consult__phone">
-        Или сразу позвоните: <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a><br />
+        Или сразу позвоните: <a class="phone" href={`tel:${company.phoneHref}`}
+           data-analytics="phone" data-placement="consult">{company.phone}</a><br />
         <span class="muted">{company.showroom.hours}</span>
       </p>
     </div>

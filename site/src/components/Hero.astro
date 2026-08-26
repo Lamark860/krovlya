@@ -38,8 +38,12 @@ const {
       <p class="lead hero__lead">{lead}</p>
 
       <div class="hero__actions">
-        <a class="btn" href="#quiz">Рассчитать стоимость — 2 минуты</a>
-        <a class="btn btn--ghost" href="#lead">Получить консультацию</a>
+        <a class="btn" href="#quiz"
+           data-analytics="cta" data-cta-id="hero_calculate"
+           data-placement="hero" data-target="quiz">Рассчитать стоимость — 2 минуты</a>
+        <a class="btn btn--ghost" href="#lead"
+           data-analytics="cta" data-cta-id="hero_consult"
+           data-placement="hero" data-target="form">Получить консультацию</a>
       </div>
 
       <p class="gift hero__gift">{gift}</p>

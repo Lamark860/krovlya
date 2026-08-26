@@ -29,6 +29,10 @@ const { title, lead, magnet, bullets } = Astro.props;
         <button
           type="button"
           class="btn btn--shine magnet__cta"
+          data-analytics="cta"
+          data-cta-id="magnet_download"
+          data-placement="magnet"
+          data-target="form"
           data-quick
           data-quick-name
           data-quick-title={title}

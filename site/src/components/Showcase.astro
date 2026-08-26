@@ -38,6 +38,10 @@ const money = (value: number) => value.toLocaleString("ru-RU");
         <button
           type="button"
           class="card__link"
+          data-analytics="cta"
+          data-cta-id="product_card"
+          data-placement="showcase"
+          data-target="form"
           data-quick
           data-quick-title="Купить в 1 клик"
           data-quick-lead="Перезвоним как можно скорее и уточним детали заказа."
@@ -70,6 +74,10 @@ const money = (value: number) => value.toLocaleString("ru-RU");
         <button
           type="button"
           class="btn card__buy"
+          data-analytics="cta"
+          data-cta-id="product_buy"
+          data-placement="showcase"
+          data-target="form"
           data-quick
           data-quick-title="Купить в 1 клик"
           data-quick-lead="Перезвоним как можно скорее и уточним детали заказа."
@@ -82,7 +90,9 @@ const money = (value: number) => value.toLocaleString("ru-RU");
     ))}
 
     <p class="showcase__more">
-      <a class="btn btn--shine showcase__all" href={catalog}>Перейти в каталог</a>
+      <a class="btn btn--shine showcase__all" href={catalog}
+         data-analytics="cta" data-cta-id="showcase_catalog"
+         data-placement="showcase" data-target="catalog">Перейти в каталог</a>
     </p>
   </div>
 </section>

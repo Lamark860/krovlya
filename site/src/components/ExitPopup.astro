@@ -29,7 +29,9 @@ const { title, lead, magnet, bullets } = Astro.props;
       {bullets.map((bullet) => <li>{bullet}</li>)}
     </ul>
 
-    <form class="popup__form" data-lead data-magnet={magnet}>
+    <form class="popup__form" data-lead data-magnet={magnet}
+          data-analytics-form="lead" data-form-id="modal_form"
+          data-placement="modal" data-lead-type="estimate">
       <div class="channel" role="group" aria-label="Куда прислать">
         <button type="button" class="channel__btn is-active" data-channel="telegram">Telegram</button>
         <button type="button" class="channel__btn" data-channel="max">MAX</button>

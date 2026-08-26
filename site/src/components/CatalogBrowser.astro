@@ -44,8 +44,11 @@ const { src, eyebrow, title, accent, lead, subLabel, quiz, quizTitle, quizLead }
       <h1>{title} <span class="offer__accent">{accent}</span></h1>
       <p class="lead">{lead}</p>
       <p class="offer__actions">
-        <a class="btn" href={quiz}>Рассчитать стоимость — 2 минуты</a>
-        <a class="btn btn--ghost" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+        <a class="btn" href={quiz}
+           data-analytics="cta" data-cta-id="catalog_calculate"
+           data-placement="catalog" data-target="quiz">Рассчитать стоимость — 2 минуты</a>
+        <a class="btn btn--ghost" href={`tel:${company.phoneHref}`}
+           data-analytics="phone" data-placement="catalog">{company.phone}</a>
       </p>
     </div>
   </div>
@@ -87,7 +90,9 @@ const { src, eyebrow, title, accent, lead, subLabel, quiz, quizTitle, quizLead }
 <section class="section">
   <div class="layout">
     <SectionIntro eyebrow="бесплатно и быстро" title={quizTitle} lead={quizLead}>
-      <a class="btn btn--shine" href={quiz}>Рассчитать стоимость</a>
+      <a class="btn btn--shine" href={quiz}
+           data-analytics="cta" data-cta-id="catalog_calculate_bottom"
+           data-placement="catalog" data-target="quiz">Рассчитать стоимость</a>
     </SectionIntro>
   </div>
 </section>
@@ -140,6 +145,8 @@ const { src, eyebrow, title, accent, lead, subLabel, quiz, quizTitle, quizLead }
     return `
       <article class="tile card">
         <button type="button" class="card__link"
+                data-analytics="cta" data-cta-id="product_card"
+                data-placement="catalog" data-target="form"
                 data-quick
                 data-quick-title="Купить в 1 клик"
                 data-quick-lead="Перезвоним как можно скорее и уточним детали заказа."
@@ -152,6 +159,8 @@ const { src, eyebrow, title, accent, lead, subLabel, quiz, quizTitle, quizLead }
         <p class="card__price num">${money(item.p)} <span class="unit">${unit}</span>
           <s class="card__old num">${money(strikePrice(item.n, item.p))}</s></p>
         <button type="button" class="btn card__buy"
+                data-analytics="cta" data-cta-id="product_buy"
+                data-placement="catalog" data-target="form"
                 data-quick
                 data-quick-title="Купить в 1 клик"
                 data-quick-lead="Перезвоним как можно скорее и уточним детали заказа."
@@ -272,7 +281,7 @@ const { src, eyebrow, title, accent, lead, subLabel, quiz, quizTitle, quizLead }
       count.textContent = "";
       grid.innerHTML = `<p class="tile cat__fail">Каталог не загрузился — обновите страницу.
         Или позвоните, подберём покрытие и назовём цену:
-        ${phone ? `<a class="phone" href="${phone.href}">${phone.textContent!.trim()}</a>` : ""}</p>`;
+        ${phone ? `<a class="phone" href="${phone.href}" data-analytics="phone" data-placement="catalog_fail">${phone.textContent!.trim()}</a>` : ""}</p>`;
     });
 </script>
 

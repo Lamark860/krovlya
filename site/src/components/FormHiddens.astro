@@ -20,3 +20,13 @@ const { source = false } = Astro.props;
 <input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
 <input type="hidden" name="geo" value={defaultCity.label} />
 {source && <input type="hidden" name="source" value="" />}
+
+{/* Рекламные метки. Заполняются скриптом аналитики из адреса или из хранилища
+    (человек мог прийти по объявлению неделю назад), оттуда же читаются в заявку —
+    так в письме менеджеру и в отчёте Метрики стоит одно и то же значение. */}
+<input type="hidden" name="utm_source" data-utm-field="utm_source" />
+<input type="hidden" name="utm_medium" data-utm-field="utm_medium" />
+<input type="hidden" name="utm_campaign" data-utm-field="utm_campaign" />
+<input type="hidden" name="utm_content" data-utm-field="utm_content" />
+<input type="hidden" name="utm_term" data-utm-field="utm_term" />
+<input type="hidden" name="yclid" data-utm-field="yclid" />

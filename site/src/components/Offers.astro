@@ -20,13 +20,15 @@ const offers = OFFERS[direction];
   <div class="layout">
     <SectionIntro eyebrow="что действует сейчас" title={title} lead={lead} />
 
-    {offers.map((offer) => (
+    {offers.map((offer, i) => (
       <article class="tile offer">
         <img class="offer__bg" src={offer.image} alt="" loading="lazy" width="600" height="400" />
         <div class="offer__body">
           <h3 class="offer__title">{offer.title}</h3>
           <p class="offer__text">{offer.text}</p>
-          <a class="offer__link" href={offer.href}>{offer.action} →</a>
+          <a class="offer__link" href={offer.href}
+             data-analytics="cta" data-cta-id={`offer_${i + 1}`}
+             data-placement="offers" data-target={offer.href === "#quiz" ? "quiz" : "form"}>{offer.action} →</a>
         </div>
       </article>
     ))}

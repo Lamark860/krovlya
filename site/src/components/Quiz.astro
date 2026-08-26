@@ -68,6 +68,9 @@ const steps = config.steps.length;
 <script>
   import { QUIZ, rowPrice, rowPerMetre } from "../data/quiz";
   import type { Answers, QuizOption } from "../data/quiz";
+  import {
+    fillTracking, leadError, leadSuccess, trackMetrika, trackingParams, validationError, watchForm,
+  } from "../scripts/analytics";
 
   // Направление приезжает из разметки: у скрипта нет пропсов, а держать
   // две сборки одного компонента ради одной строки — хуже.
@@ -85,6 +88,35 @@ const steps = config.steps.length;
 
   type Row = (string | number)[];
   let data: { items: Row[]; price: { p25: number; median: number; p75: number } } | null = null;
+
+  // Аналитика квиза. `quiz_start` шлём на первом ответе, а не на показе секции:
+  // квиз стоит в середине страницы, и мимо него прокручивают чаще, чем отвечают.
+  const QUIZ_ID = `${section.dataset.direction ?? "poly"}_quiz`;
+  let quizStarted = false;
+  let quizFinished = false;
+
+  const markStart = () => {
+    if (quizStarted) return;
+    quizStarted = true;
+    trackMetrika("quiz_start", { quiz_id: QUIZ_ID, placement: "quiz" });
+  };
+
+  /**
+   * Ответы квиза для параметров цели: коды вариантов, ничего личного.
+   * Имя, телефон и способ связи сюда не попадают — в Метрике им не место,
+   * а без разреза «санузел / фартук / фасад» отчёт бесполезен.
+   */
+  const anonymised = (): Record<string, string> => {
+    const out: Record<string, string> = {};
+    for (const step of STEPS) {
+      const value = answers[step.id];
+      if (value == null) continue;
+      out[step.id] = Array.isArray(value) ? value.join(",") : String(value);
+    }
+    // Отдельным привычным именем: по нему Артур строит отчёт в Директе.
+    out.area_group = out.size ?? out.rooms ?? "unknown";
+    return out;
+  };
 
   const answers: Answers = { ...config.defaults };
   let index = 0;
@@ -200,6 +232,7 @@ const steps = config.steps.length;
   }
 
   function choose(step: Step, value: string) {
+    markStart();
     if (step.multiple) {
       const current = new Set(Array.isArray(answers[step.id]) ? (answers[step.id] as string[]) : []);
       if (value === "none") current.clear();
@@ -214,6 +247,8 @@ const steps = config.steps.length;
   }
 
   async function advance() {
+    trackMetrika("quiz_step_complete", { quiz_id: QUIZ_ID, step: index + 1, total_steps: STEPS.length });
+
     if (index < STEPS.length - 1) {
       index += 1;
       renderStep();
@@ -234,7 +269,8 @@ const steps = config.steps.length;
       // а дублировать номер в разметке — значит однажды забыть его обновить.
       const tel = document.querySelector<HTMLAnchorElement>('a[href^="tel:"]');
       body.innerHTML = `<p>Не получилось загрузить каталог — посчитаем вручную, это быстро.`
-        + (tel ? ` Позвоните: <a class="phone" href="${tel.href}">${tel.textContent!.trim()}</a>` : "")
+        + (tel ? ` Позвоните: <a class="phone" href="${tel.href}"
+             data-analytics="phone" data-placement="quiz_fallback">${tel.textContent!.trim()}</a>` : "")
         + `</p>`;
       return;
     }
@@ -264,6 +300,14 @@ const steps = config.steps.length;
 
   function renderResult() {
     const result = estimate();
+
+    // Расчёт человек увидел — для аналитики квиз пройден, даже если контакт
+    // он не оставит. Это и есть разница между `quiz_complete` и `quiz_lead_success`.
+    if (!quizFinished) {
+      quizFinished = true;
+      trackMetrika("quiz_complete", { quiz_id: QUIZ_ID, steps_completed: STEPS.length });
+    }
+
     title.textContent = "Ваш предварительный расчёт";
     progress.textContent = `${money(result.area)} м² · подходит ${money(matching())} `
       + plural(matching(), ["позиция", "позиции", "позиций"]);
@@ -285,7 +329,9 @@ const steps = config.steps.length;
           <p class="micro muted">Предварительный расчёт. Точная смета — после бесплатного замера.</p>
         </div>
 
-        <form class="quiz__form" data-lead-form>
+        <form class="quiz__form" data-lead-form
+              data-analytics-form="lead" data-form-id="quiz_form"
+              data-placement="quiz" data-lead-type="calculation">
           <fieldset class="quiz__fieldset">
             <legend class="eyebrow">выберите подарок</legend>
             <div class="quiz__options quiz__options--compact" data-gift>
@@ -313,6 +359,13 @@ const steps = config.steps.length;
 
           <input type="text" name="company" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
+          <input type="hidden" name="utm_source" data-utm-field="utm_source" />
+          <input type="hidden" name="utm_medium" data-utm-field="utm_medium" />
+          <input type="hidden" name="utm_campaign" data-utm-field="utm_campaign" />
+          <input type="hidden" name="utm_content" data-utm-field="utm_content" />
+          <input type="hidden" name="utm_term" data-utm-field="utm_term" />
+          <input type="hidden" name="yclid" data-utm-field="yclid" />
+
           <label class="consent">
             <input type="checkbox" name="consent" required />
             <span>Согласен на <a href="/privacy">обработку персональных данных</a> и <a href="/cookies">использование cookie</a></span>
@@ -328,6 +381,11 @@ const steps = config.steps.length;
     const form = body.querySelector<HTMLFormElement>("[data-lead-form]")!;
     const contact = form.querySelector<HTMLInputElement>("[data-contact]")!;
     const label = form.querySelector<HTMLElement>("[data-contact-label]")!;
+
+    // Форма появилась только сейчас, поэтому подписку и рекламные метки
+    // общий скрипт страницы уже не проставит — делаем это сами.
+    watchForm(form);
+    fillTracking(form);
 
     // Подпись и подсказка меняются вместе: иначе выбран Telegram,
     // а поле подсказывает «+7 » — и человек не понимает, что можно дать @username.
@@ -393,6 +451,20 @@ const steps = config.steps.length;
       event.preventDefault();
       const button = form.querySelector("button[type=submit]") as HTMLButtonElement;
       const error = form.querySelector<HTMLElement>("[data-error]")!;
+
+      // Та же проверка, что и в общем обработчике форм: браузер видит
+      // недописанный номер как обычный текст и молча отправляет его на сервер.
+      const value = contact.value.trim();
+      const digits = value.replace(/\D/g, "");
+      const okUsername = answers.channel === "telegram" && /^@[\w\d_]{4,32}$/.test(value);
+      if (!okUsername && (digits.length < 10 || digits.length > 11)) {
+        validationError(form, "contact", value ? "invalid_phone" : "empty_required_field");
+        error.textContent = value ? "Проверьте номер телефона" : "Оставьте номер телефона";
+        error.hidden = false;
+        contact.focus();
+        return;
+      }
+
       button.disabled = true;
       error.hidden = true;
 
@@ -406,7 +478,7 @@ const steps = config.steps.length;
         page: location.pathname,
         geo: document.querySelector<HTMLInputElement>("input[name=geo]")?.value ?? "",
         quiz: { ...answers, estimate: estimate() },
-        utm: Object.fromEntries(new URLSearchParams(location.search)),
+        utm: { ...Object.fromEntries(new URLSearchParams(location.search)), ...trackingParams() },
       };
 
       try {
@@ -418,8 +490,17 @@ const steps = config.steps.length;
         const json = await response.json();
         if (!response.ok) throw new Error(json.error ?? "Не удалось отправить");
         sessionStorage.setItem("lead", JSON.stringify({ name: payload.name, channel: answers.channel }));
+        // В параметры цели уходят только обезличенные ответы: что отделываем,
+        // какая площадь, что нужно. Имени и телефона в Метрике быть не должно.
+        await leadSuccess(form, {
+          quiz_id: QUIZ_ID,
+          steps_completed: STEPS.length,
+          channel: answers.channel,
+          ...anonymised(),
+        });
         location.href = "/thanks";
       } catch (problem) {
+        leadError(form, problem instanceof TypeError ? "network_error" : "server_error");
         error.textContent = problem instanceof Error ? problem.message : "Не удалось отправить";
         error.hidden = false;
         button.disabled = false;

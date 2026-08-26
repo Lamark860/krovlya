@@ -32,7 +32,9 @@ const { title, lead, updated = false } = Astro.props;
         {lead && <p class="lead">{lead}</p>}
       </div>
 
-      <form class="price__form" data-lead data-source="Запрос прайс-листа">
+      <form class="price__form" data-lead data-source="Запрос прайс-листа"
+            data-analytics-form="lead" data-form-id="price_form"
+            data-placement="price_block" data-lead-type="estimate">
         <label class="field price__field">
           <span class="field__label">Куда отправить</span>
           <select class="control" name="channel">

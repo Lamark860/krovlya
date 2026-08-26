@@ -26,7 +26,9 @@ import { company } from "../data/company";
     <h2 class="quick__title" id="quick-title" data-quick-title>Заказать в 1 клик</h2>
     <p class="muted quick__lead" data-quick-lead>Перезвоним как можно скорее и уточним детали заказа.</p>
 
-    <form class="quick__form" data-lead data-channel="phone">
+    <form class="quick__form" data-lead data-channel="phone"
+          data-analytics-form="lead" data-form-id="modal_form"
+          data-placement="modal" data-lead-type="callback">
       {/* Имя спрашиваем не всегда: у «в 1 клик» одно поле, у лид-магнита — два.
           Поле не просто прячется, а отключается: скрытое, но включённое
           `required` не даёт отправить форму, и человек не понимает почему. */}
@@ -49,7 +51,8 @@ import { company } from "../data/company";
     </form>
 
     <p class="micro muted quick__note">
-      Или сразу позвоните: <a class="phone" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+      Или сразу позвоните: <a class="phone" href={`tel:${company.phoneHref}`}
+         data-analytics="phone" data-placement="modal">{company.phone}</a>
     </p>
   </div>
 </dialog>
