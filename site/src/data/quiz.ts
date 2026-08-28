@@ -76,7 +76,8 @@ const POLY_WORK = {
   skirting: [300, 400],
   thresholds: [400, 600],
   demolition: [150, 250],
-  leveling: [400, 700],
+  // Выравнивания в списке нет намеренно: черновые работы клиент не делает,
+  // а предложить их в квизе — значит собрать звонки про стяжку (правка 27.08).
 } as const;
 
 const poly: QuizConfig = {
@@ -135,7 +136,6 @@ const poly: QuizConfig = {
         { value: "skirting", label: "Плинтус" },
         { value: "thresholds", label: "Порожки" },
         { value: "demolition", label: "Снять старый пол" },
-        { value: "leveling", label: "Выровнять основание" },
         { value: "none", label: "Только покрытие" },
       ],
     },
@@ -173,7 +173,6 @@ const poly: QuizConfig = {
     if (extras.includes("skirting")) { low += POLY_WORK.skirting[0] * perimeter; high += POLY_WORK.skirting[1] * perimeter; }
     if (extras.includes("thresholds")) { low += POLY_WORK.thresholds[0] * 2; high += POLY_WORK.thresholds[1] * 4; }
     if (extras.includes("demolition")) { low += POLY_WORK.demolition[0] * area; high += POLY_WORK.demolition[1] * area; }
-    if (extras.includes("leveling")) { low += POLY_WORK.leveling[0] * area; high += POLY_WORK.leveling[1] * area; }
     return [Math.round(low), Math.round(high)];
   },
 
