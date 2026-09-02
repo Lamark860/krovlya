@@ -1,10 +1,10 @@
-# Выкатка на виртуальный хостинг reg.ru: сборка в Actions → заливка по SFTP.
+# Выкатка на виртуальный хостинг reg.ru: сборка в Actions → заливка по FTPS.
 #
 # Почему не как раньше: на shared-хостинге нет root, значит нет Docker и нет Bun.
 # Поэтому статику собираем здесь, на раннере, а на хостинг кладём только результат:
 # готовый dist + один PHP-файл API. Разбор решения — в _local_docs/11_DEPLOY.md.
 #
-# Секреты: HOSTING_HOST, HOSTING_USER, HOSTING_PATH, HOSTING_SSH_KEY.
+# Секреты: HOSTING_HOST, HOSTING_USER, HOSTING_PASSWORD, HOSTING_PATH.
 # Переменные: PUBLIC_SITE_URL, PUBLIC_INDEXABLE, SITE_CHECK_URL (последняя необязательна).
 name: Deploy to hosting
 
@@ -52,32 +52,47 @@ jobs:
         env:
           HOST: ${{ secrets.HOSTING_HOST }}
           USER: ${{ secrets.HOSTING_USER }}
+          PASSWORD: ${{ secrets.HOSTING_PASSWORD }}
           PATH_REMOTE: ${{ secrets.HOSTING_PATH }}
-          SSH_KEY: ${{ secrets.HOSTING_SSH_KEY }}
         run: |
           set -e
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          mkdir -p ~/.ssh && echo "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          # lftp поверх SFTP, а не rsync: rsync нужен на обоих концах, а на shared-хостинге
-          # его наличие не гарантировано. SFTP там есть всегда.
+          # lftp, а не rsync: rsync нужен на обоих концах, а на shared-хостинге
+          # его наличие не гарантировано.
           #
-          # --delete чистит удалённые файлы, но .well-known трогать нельзя:
-          # там лежит подтверждение Let's Encrypt, без него не продлится сертификат.
+          # FTP, а не SFTP: ключ деплоя на сервер так и не попал, а SSH там банится
+          # по IP после нескольких попыток подряд — на этом выкатка через Actions
+          # молча стояла с самого начала. Пароль открытым текстом при этом не уходит:
+          # хостер отдаёт AUTH TLS, поэтому TLS обязателен и на управляющем канале,
+          # и на канале данных. Проверку сертификата снимаем осознанно — он
+          # самоподписанный и цепочку не проходит; шифрование канала это не отменяет.
+          #
+          # --delete чистит на сервере то, чего больше нет в релизе, иначе там копятся
+          # старые хешированные бандлы. Два каталога трогать нельзя: в .well-known
+          # лежит подтверждение Let's Encrypt (без него не продлится сертификат),
+          # cgi-bin заводит панель. Конфиг заявок (config/krovlya.php) лежит выше
+          # корня сайта и под mirror не попадает вовсе — так и задумано.
+          #
           # Без пути заливать некуда, а mirror без него уедет в домашний каталог
           # и снесёт там всё --delete'ом. Лучше упасть.
           [ -n "$PATH_REMOTE" ] || { echo "не задан секрет HOSTING_PATH"; exit 1; }
+          [ -n "$PASSWORD" ] || { echo "не задан секрет HOSTING_PASSWORD"; exit 1; }
 
-          lftp -u "$USER," "sftp://$HOST" <<LFTP
-          set sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy_key"
+          # Пароль отдаём внутрь скрипта, а не аргументом lftp: в аргументах он
+          # виден в списке процессов раннера.
+          lftp <<LFTP
+          set ftp:ssl-force true
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate no
+          set ftp:passive-mode true
           set net:max-retries 3
           set net:timeout 20
           set mirror:parallel-transfer-count 4
+          open -u "$USER","$PASSWORD" "ftp://$HOST"
           mirror -R --delete --verbose=1 --exclude '(^|/)\.well-known/' --exclude '(^|/)cgi-bin/' release/ $PATH_REMOTE
           bye
           LFTP
-          rm -f ~/.ssh/deploy_key
 
       - name: Проверить, что сайт отвечает
         if: ${{ vars.SITE_CHECK_URL != '' }}
