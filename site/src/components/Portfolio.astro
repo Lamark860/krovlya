@@ -5,31 +5,66 @@
  * и кнопка «Хочу так же» (вместо «Смотреть подробнее» у референса).
  * Кнопки «Перейти в портфолио» нет — все кейсы на месте.
  *
- * Фото — по ссылкам от заказчика (17.08 — четыре кейса, 26.08 — оставшиеся четыре).
- * Лежат у нас, `site/public/portfolio/`: ссылки вели на сторонние сайты,
- * хотлинк не оставляем.
+ * С 02.09 блок общий на оба направления: кейсы берутся из `portfolio.json`
+ * по `direction`, заголовки приходят пропсами. У полов кадры горизонтальные,
+ * у санузлов — вертикальные, поэтому пропорция обложки тоже пропс: кадрировать
+ * присланное фото санузла под 4:3 значит отрезать у него пол или потолок.
+ *
+ * Полы: фото по ссылкам от заказчика (17.08 и 26.08), лежат у нас —
+ * ссылки вели на сторонние сайты, хотлинк не оставляем. Цифры в `specs`
+ * выдуманы и на странице ничем не помечены (вопрос 30).
+ * Плитка: 27 фото восьми санузлов, архив от Артура 02.09. `specs` пустые
+ * сознательно — кроме названия ЖК о них ничего достоверного не известно.
  *
  * Плашка «черновик» скрыта с 27.08 (`draft: false`): служебная надпись
  * «ждём данные по объектам» на рекламной странице отпугивает покупателя,
  * а не защищает нас. Разметка плашки оставлена — `draft: true` вернёт её
- * одной правкой в данных. Но помнить: цифры в `specs` всё ещё выдуманы,
- * и теперь на странице они ничем не помечены.
- * Пустой `cover` по-прежнему рисуется заглушкой, а лента миниатюр при пустом `shots`
- * не выводится: битых картинок на странице быть не должно.
+ * одной правкой в данных.
+ * Пустой `cover` рисуется заглушкой, лента миниатюр при пустом `shots`
+ * не выводится, а пустой `specs` не оставляет от себя дыру в карточке:
+ * битых картинок и пустых блоков на странице быть не должно.
  */
 import portfolio from "../data/portfolio.json";
 import SectionIntro from "./SectionIntro.astro";
 
-const { cases, draft } = portfolio;
+interface Props {
+  direction: "poly" | "plitka";
+  eyebrow: string;
+  title: string;
+  lead: string;
+  /** Пропорция кадра, как в CSS: «4 / 3» у полов, «3 / 4» у санузлов. */
+  ratio?: string;
+  /** Подпись в попапе «Хочу так же»: у пола считают метр, у санузла — объект. */
+  quickLead?: string;
+}
+
+const {
+  direction,
+  eyebrow,
+  title,
+  lead,
+  ratio = "4 / 3",
+  quickLead = "Перезвоним, посчитаем ваш метраж и назовём цену за метр вместе с укладкой.",
+} = Astro.props;
+
+// В JSON рядом с кейсами лежат `_comment` и `draft`, поэтому не Record<string, Case[]>.
+const cases = (portfolio as any)[direction] as {
+  id: string; title: string; cover: string; shots: string[]; specs: Record<string, string>;
+}[];
+const { draft } = portfolio;
+
+// Размеры в атрибутах — под ту же пропорцию: иначе браузер резервирует не ту
+// высоту, и страница дёргается, пока грузятся фото.
+const [rw, rh] = ratio.split("/").map((n) => Number(n.trim()));
+const coverW = 480;
+const coverH = Math.round((coverW * rh) / rw);
+const shotW = 120;
+const shotH = Math.round((shotW * rh) / rw);
 ---
 
-<section class="folio" id="portfolio">
+<section class="folio" id="portfolio" style={`--folio-ratio: ${ratio}`}>
   <div class="layout">
-    <SectionIntro
-      eyebrow="наши объекты"
-      title="Уложенный пол: что получилось у клиентов"
-      lead="Материал со своего склада, укладка своей бригадой. Цена в кейсе — за квадратный метр вместе с работой, подложкой и плинтусом."
-    >
+    <SectionIntro eyebrow={eyebrow} title={title} lead={lead}>
       {draft && (
         <p class="folio__draft">
           Черновик блока: фото — присланные ссылки, цифры — примеры структуры. Ждём данные по объектам.
@@ -41,7 +76,7 @@ const { cases, draft } = portfolio;
       <article class="tile folio__case" data-case>
         <div class="folio__cover">
           {item.cover
-            ? <img src={item.cover} alt={item.title} loading="lazy" width="480" height="360" data-cover />
+            ? <img src={item.cover} alt={item.title} loading="lazy" width={coverW} height={coverH} data-cover />
             : <span class="folio__ph" data-cover-ph>фото объекта</span>}
         </div>
 
@@ -50,7 +85,7 @@ const { cases, draft } = portfolio;
             {item.shots.map((shot: string, i: number) => (
               <li>
                 <button type="button" class="folio__shot" data-shot={shot} aria-label={`Фото ${i + 1}`}>
-                  <img src={shot} alt="" loading="lazy" width="120" height="90" />
+                  <img src={shot} alt="" loading="lazy" width={shotW} height={shotH} />
                 </button>
               </li>
             ))}
@@ -60,14 +95,16 @@ const { cases, draft } = portfolio;
         <div class="folio__body">
           <h3 class="folio__title">{item.title}</h3>
 
-          <dl class="folio__specs">
-            {Object.entries(item.specs).map(([label, value]) => (
-              <div class="folio__row">
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </div>
-            ))}
-          </dl>
+          {Object.keys(item.specs).length > 0 && (
+            <dl class="folio__specs">
+              {Object.entries(item.specs).map(([label, value]) => (
+                <div class="folio__row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
 
           <button
             type="button"
@@ -78,7 +115,7 @@ const { cases, draft } = portfolio;
             data-target="form"
             data-quick
             data-quick-title="Хочу так же"
-            data-quick-lead="Перезвоним, посчитаем ваш метраж и назовём цену за метр вместе с укладкой."
+            data-quick-lead={quickLead}
             data-quick-submit="Жду звонка"
             data-quick-source={`Кейс: ${item.title}`}
           >
@@ -128,7 +165,16 @@ const { cases, draft } = portfolio;
     flex-direction: column;
   }
 
-  .folio__cover { aspect-ratio: 4 / 3; background: var(--bg); }
+  /* `min-height: 0` обязателен: карточка — колоночный флекс, и у обложки
+     как флекс-элемента автоматический минимум равен высоте содержимого.
+     Кадр, снятый в 2:3 вместо 3:4, растягивал свою карточку на 57 px выше
+     соседних, и весь ряд ехал за ней. Теперь высоту задаёт только пропорция,
+     а лишнее подрезает object-fit. */
+  .folio__cover {
+    aspect-ratio: var(--folio-ratio, 4 / 3);
+    min-height: 0;
+    background: var(--bg);
+  }
   .folio__cover img { width: 100%; height: 100%; object-fit: cover; }
 
   /* Заглушка вместо фото: штриховка «под затирку», без единого файла */
@@ -149,13 +195,19 @@ const { cases, draft } = portfolio;
     text-transform: uppercase;
   }
 
+  /* Лента миниатюр: flex, а не сетка в четыре колонки. У кейсов от одного
+     до четырёх дополнительных кадров, и в фиксированной сетке кейс с двумя
+     оставлял справа пустое место — карточка читалась как недоделанная.
+     Так кадры делят ширину поровну, сколько бы их ни было. */
   .folio__shots {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
     gap: 2px;
     list-style: none;
     padding: 0;
   }
+
+  /* Флекс-элементы здесь — `li`, а не кнопка внутри неё. */
+  .folio__shots > li { flex: 1 1 0; min-width: 0; }
 
   .folio__shot {
     display: block;
@@ -166,7 +218,10 @@ const { cases, draft } = portfolio;
     cursor: pointer;
   }
 
-  .folio__shot img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  /* Высота ленты постоянная, ширина кадра плавает. Пропорцию здесь не держим
+     специально: это навигация по кейсу, а не сам кадр — по клику миниатюра
+     встаёт на место обложки целиком. */
+  .folio__shot img { width: 100%; height: 88px; object-fit: cover; display: block; }
 
   .folio__body {
     display: flex;

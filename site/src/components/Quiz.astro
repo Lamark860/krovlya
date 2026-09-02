@@ -19,9 +19,16 @@ interface Props {
   accent: string;
   /** Подпись под фото менеджера: чем именно мы считаем честно */
   personNote: string;
+  /**
+   * Уровень заголовка. На посадочной квиз — секция среди прочих, там `h2`.
+   * На отдельной странице квиза он единственный смысл страницы, и заголовок
+   * обязан быть `h1`: иначе у страницы нет первого уровня вовсе.
+   */
+  level?: "h1" | "h2";
 }
 
-const { direction, title, accent, personNote } = Astro.props;
+const { direction, title, accent, personNote, level = "h2" } = Astro.props;
+const Heading = level;
 const config = QUIZ[direction];
 const steps = config.steps.length;
 ---
@@ -30,7 +37,10 @@ const steps = config.steps.length;
   <div class="layout">
     <div class="tile quiz__intro">
       <p class="eyebrow">расчёт за 2 минуты · {steps} вопросов</p>
-      <h2>{title} <span class="quiz__accent">{accent}</span></h2>
+      {/* Пробел явный: у компонентного тега (`<Heading>` вместо `<h2>`) Astro
+          съедает пробел между выражением и элементом, и заголовок склеивается
+          в «стоимость полаи получите». */}
+      <Heading>{title}{" "}<span class="quiz__accent">{accent}</span></Heading>
       <p class="quiz__promise">
         Приблизительную стоимость вы увидите сразу — <b>без отправки контактных данных</b>.
       </p>
@@ -546,6 +556,14 @@ const steps = config.steps.length;
 <style is:global>
   .quiz__intro { grid-column: span 12; display: grid; gap: var(--s-1); justify-items: start; }
   .quiz__accent { color: var(--accent-hover); }
+
+  /* Заголовок задан тегом: на посадочной это h2, на отдельной странице квиза — h1.
+     Глобальный h1 — кегль обложки, внутри плитки он не к месту. Держим один размер. */
+  .quiz__intro :is(h1, h2) {
+    font-size: var(--t-h2);
+    line-height: 1.14;
+    letter-spacing: -0.015em;
+  }
 
   /* Разбор метража. Ради него люди и проходят квиз: «пол 4 м² плюс стены 18 м²»
      отвечает на вопрос, который человек не умеет посчитать сам. */

@@ -1,0 +1,43 @@
+---
+/**
+ * Отдельная страница квиза по плитке и керамограниту. Пара к `quiz.astro`,
+ * правка Артура от 02.09.
+ *
+ * Всё устройство и оговорки — там же, в шапке `quiz.astro`. Здесь отличаются
+ * только направление, тексты и адрес каталога. Отдельно про адрес: `plitka`
+ * в пути обязателен — по нему `serviceOf()` в analytics.ts отличает направление
+ * в целях Метрики. Переименуете страницу в `/kviz` — сломаете отчёт по плитке.
+ */
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Quiz from "../components/Quiz.astro";
+import Consult from "../components/Consult.astro";
+import Contacts from "../components/Contacts.astro";
+import Footer from "../components/Footer.astro";
+import QuickForm from "../components/QuickForm.astro";
+---
+
+<Base
+  title="Расчёт плитки и керамогранита за 2 минуты — «Мой ремонт», Ижевск"
+  description="Ответьте на 5 вопросов и узнайте, сколько плитки нужно на санузел и сколько это стоит вместе с укладкой. Расчёт на экране, без звонка и без контактов."
+>
+  <Header cta="#lead" catalog="/catalog-plitka" />
+
+  <main>
+    <Quiz
+      direction="plitka"
+      level="h1"
+      title="Посчитайте, сколько плитки нужно"
+      accent="и получите дизайн-проект в подарок"
+      personNote="Считаем стены и пол по вашей площади, а цены берём из каталога, а не «в среднем по рынку». Если ответ неочевиден — выберите «не знаю», уточним на замере."
+    />
+
+    <Consult />
+
+    <Contacts />
+  </main>
+
+  <Footer />
+
+  <QuickForm />
+</Base>

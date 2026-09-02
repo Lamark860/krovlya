@@ -18,6 +18,7 @@ import Steps from "../components/Steps.astro";
 import Showcase from "../components/Showcase.astro";
 import PriceList from "../components/PriceList.astro";
 import Magnet from "../components/Magnet.astro";
+import Portfolio from "../components/Portfolio.astro";
 import Payment from "../components/Payment.astro";
 import Offers from "../components/Offers.astro";
 import About from "../components/About.astro";
@@ -85,7 +86,7 @@ const faq = [
   title="Плитка и керамогранит в Ижевске с укладкой — «Мой ремонт»"
   description="2 650 позиций плитки и керамогранита в наличии и под заказ. Расчёт количества с подрезкой за 2 минуты, бесплатный замер, дизайн-проект санузла в подарок."
 >
-  <Header cta="#lead" />
+  <Header cta="#lead" catalog="/catalog-plitka" />
 
   <main>
     <Hero
@@ -115,8 +116,6 @@ const faq = [
       personNote="Считаем стены и пол по вашей площади, а цены берём из каталога, а не «в среднем по рынку». Если ответ неочевиден — выберите «не знаю», уточним на замере."
     />
 
-    <Steps title="Как мы отделываем санузел" steps={steps} />
-
     <Showcase
       direction="plitka"
       catalog="/catalog-plitka"
@@ -124,6 +123,8 @@ const faq = [
       title="Плитка и керамогранит в наличии"
       lead="Показаны позиции со склада. В каталоге больше двух с половиной тысяч коллекций: подберём под раскладку и бюджет на замере."
     />
+
+    <Steps title="Как мы отделываем санузел" steps={steps} />
 
     {/* Чуть выше середины страницы — так просил заказчик (ответ 13) */}
     <Magnet
@@ -137,6 +138,15 @@ const faq = [
       title="Нет времени изучать каталог? <b>Скачайте прайс с актуальными ценами</b> прямо сейчас"
       lead="Весь ассортимент плитки и керамогранита одним файлом — с ценами на сегодня."
       updated
+    />
+
+    <Portfolio
+      direction="plitka"
+      ratio="3 / 4"
+      eyebrow="наши объекты"
+      title="Санузлы, которые мы отделали"
+      lead="Фотографии с объектов в Ижевске: плитка и керамогранит из нашего каталога, укладка своей бригадой."
+      quickLead="Перезвоним, посчитаем ваш санузел и назовём цену вместе с укладкой."
     />
 
     <Payment />
