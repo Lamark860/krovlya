@@ -69,7 +69,8 @@ const steps = config.steps.length;
   import { QUIZ, rowPrice, rowPerMetre } from "../data/quiz";
   import type { Answers, QuizOption } from "../data/quiz";
   import {
-    fillTracking, leadError, leadSuccess, trackMetrika, trackingParams, validationError, watchForm,
+    fillTracking, leadError, leadSuccess, onceThisVisit, trackMetrika, trackingParams,
+    validationError, watchForm,
   } from "../scripts/analytics";
 
   // Направление приезжает из разметки: у скрипта нет пропсов, а держать
@@ -247,7 +248,22 @@ const steps = config.steps.length;
   }
 
   async function advance() {
-    trackMetrika("quiz_step_complete", { quiz_id: QUIZ_ID, step: index + 1, total_steps: STEPS.length });
+    // Номер шага уходит строкой, и это не косметика: числовые значения параметров
+    // Метрика суммирует и усредняет вместо того, чтобы разложить по строкам отчёта,
+    // и воронка по шагам не собирается вовсе. Строки она считает по различным
+    // значениям — ровно то, что нужно. Число оставляем отдельным ключом:
+    // по нему видно средний шаг, до которого доходят.
+    //
+    // Один шаг — одно событие за визит, как у `form_view` и `faq_open`: иначе
+    // тот, кто вернулся назад и переответил, выглядит в воронке как двое.
+    if (onceThisVisit(`quiz_step:${QUIZ_ID}:${index + 1}`)) {
+      trackMetrika("quiz_step_complete", {
+        quiz_id: QUIZ_ID,
+        step: `step_${index + 1}`,
+        step_number: index + 1,
+        total_steps: STEPS.length,
+      });
+    }
 
     if (index < STEPS.length - 1) {
       index += 1;

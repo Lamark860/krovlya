@@ -181,7 +181,8 @@ function errorTypeOf(field: HTMLInputElement | HTMLSelectElement): string {
  */
 const seen = new Set<string>();
 
-function onceThisVisit(key: string): boolean {
+/** Экспортируется ради шагов квиза: он в своём модуле, а правило одно на сайт. */
+export function onceThisVisit(key: string): boolean {
   if (seen.has(key)) return false;
   seen.add(key);
   try {
