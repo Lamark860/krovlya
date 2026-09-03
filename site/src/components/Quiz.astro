@@ -76,7 +76,7 @@ const steps = config.steps.length;
 </section>
 
 <script>
-  import { QUIZ, rowPrice, rowPerMetre } from "../data/quiz";
+  import { QUIZ, describeQuiz, rowPrice, rowPerMetre } from "../data/quiz";
   import type { Answers, QuizOption } from "../data/quiz";
   import {
     fillTracking, leadError, leadSuccess, onceThisVisit, trackMetrika, trackingParams,
@@ -494,6 +494,7 @@ const steps = config.steps.length;
       button.disabled = true;
       error.hidden = true;
 
+      const calculated = estimate();
       const payload = {
         name: (form.elements.namedItem("name") as HTMLInputElement).value,
         contact: contact.value,
@@ -503,7 +504,9 @@ const steps = config.steps.length;
         elapsed: Date.now() - startedAt,
         page: location.pathname,
         geo: document.querySelector<HTMLInputElement>("input[name=geo]")?.value ?? "",
-        quiz: { ...answers, estimate: estimate() },
+        quiz: { ...answers, estimate: calculated },
+        // Те же ответы по-русски: это уходит в письмо, машинные коды — в базу.
+        quizText: describeQuiz(config, answers, calculated),
         utm: { ...Object.fromEntries(new URLSearchParams(location.search)), ...trackingParams() },
       };
 

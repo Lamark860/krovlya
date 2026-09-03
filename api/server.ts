@@ -101,20 +101,99 @@ const CHANNEL_LABELS: Record<string, string> = {
   phone: "Телефон",
 };
 
-async function notify(lead: Record<string, unknown>, id: number): Promise<boolean> {
-  const quiz = lead.quiz ? `\n\nОтветы квиза:\n${lead.quiz}` : "";
-  const utm = lead.utm ? `\n\nUTM: ${lead.utm}` : "";
-  const text =
-    `Заявка №${id} — ${lead.page ?? "сайт"}\n` +
-    `Имя: ${lead.name || "не указано"}\n` +
-    `Связь: ${CHANNEL_LABELS[String(lead.channel)]} — ${lead.contact}\n` +
-    (lead.geo ? `Гео: ${lead.geo}\n` : "") +
+/** Имена страниц: «Заявка №10 — Полы» читается быстрее, чем «Заявка №10 — /poly». */
+const PAGE_LABELS: Record<string, string> = {
+  "/": "Главная",
+  "/poly": "Полы: ламинат и кварцвинил",
+  "/plitka": "Плитка и керамогранит",
+  "/catalog": "Каталог полов",
+  "/catalog-plitka": "Каталог плитки",
+  "/quiz": "Квиз: полы",
+  "/quiz-plitka": "Квиз: плитка",
+  "/thanks": "Страница «Спасибо»",
+};
+
+function pageLabel(page: unknown): string {
+  const path = String(page ?? "").replace(/\/+$/, "") || "/";
+  return PAGE_LABELS[path] ?? String(page || "сайт");
+}
+
+const MAX_QUIZ_LINES = 40;
+
+/**
+ * Ответы квиза приезжают уже по-русски, готовыми строками: собирает их фронтенд
+ * (`describeQuiz` в `site/src/data/quiz.ts`) — там же, где лежат сами вопросы,
+ * иначе словарь подписей пришлось бы держать ещё и здесь, и в PHP-версии.
+ * Здесь остаётся только подрезать: текст пришёл от клиента.
+ */
+function quizLines(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(0, MAX_QUIZ_LINES)
+    .map((line) => String(line).replace(/\s+/g, " ").trim().slice(0, 200));
+}
+
+const UTM_LABELS: Record<string, string> = {
+  utm_campaign: "Кампания",
+  utm_content: "Объявление",
+  utm_term: "Ключевая фраза",
+  yclid: "Клик в Директе (yclid)",
+};
+
+// `etext` — служебный токен Яндекса на пол-экрана: в базе остаётся, в письме мешает.
+const UTM_SKIP = new Set(["utm_source", "utm_medium", "etext", ...Object.keys(UTM_LABELS)]);
+
+/**
+ * Метки визита строками. Всё, чему не нашлось подписи, уходит одной строкой:
+ * там город из ссылки и параметры выборки каталога — по ним видно, что человек
+ * смотрел до заявки.
+ */
+function utmLines(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+  const utm = value as Record<string, unknown>;
+  const text = (key: string) => {
+    const raw = utm[key];
+    return typeof raw === "string" || typeof raw === "number" ? String(raw).trim().slice(0, 200) : "";
+  };
+
+  const lines: string[] = [];
+  const source = [text("utm_source"), text("utm_medium")].filter(Boolean).join(" / ");
+  if (source) lines.push(`Источник: ${source}`);
+  for (const [key, label] of Object.entries(UTM_LABELS)) {
+    if (text(key)) lines.push(`${label}: ${text(key)}`);
+  }
+
+  const rest = Object.keys(utm)
+    .filter((key) => !UTM_SKIP.has(key) && text(key))
+    .slice(0, 10)
+    .map((key) => `${key}=${text(key).slice(0, 60)}`);
+  if (rest.length) lines.push(`Ещё из ссылки: ${rest.join(", ")}`);
+  return lines;
+}
+
+/** Текст заявки — один и тот же в Telegram и в письме. */
+function leadText(lead: Record<string, unknown>, id: number, body: Record<string, unknown>): string {
+  // Фронтенд мог быть старым (страница из кэша браузера) — тогда печатаем машинные
+  // ответы, как раньше: показать менеджеру JSON лучше, чем потерять разбор квиза.
+  const russian = quizLines(body.quizText);
+  const quiz = russian.length ? russian : lead.quiz ? [String(lead.quiz)] : [];
+  const utm = utmLines(body.utm);
+
+  return [
+    `Заявка №${id} — ${pageLabel(lead.page)}`,
+    `Имя: ${lead.name || "не указано"}`,
+    `Связь: ${CHANNEL_LABELS[String(lead.channel)] ?? lead.channel} — ${lead.contact}`,
+    ...(lead.geo ? [`Гео: ${lead.geo}`] : []),
     // «Детали», а не «Откуда»: сюда приезжает и товар из карточки,
     // и кейс портфолио, и пожелание «перезвонить в течение часа».
-    (lead.source ? `Детали: ${lead.source}\n` : "") +
-    (lead.magnet ? `Лид-магнит: ${lead.magnet}\n` : "") +
-    quiz + utm;
+    ...(lead.source ? [`Детали: ${lead.source}`] : []),
+    ...(lead.magnet ? [`Лид-магнит: ${lead.magnet}`] : []),
+    ...(quiz.length ? ["", "Ответы квиза:", ...quiz] : []),
+    ...(utm.length ? ["", "Откуда пришёл:", ...utm] : []),
+  ].join("\n");
+}
 
+async function notify(text: string): Promise<boolean> {
   const token = Bun.env.TELEGRAM_TOKEN;
   const chat = Bun.env.TELEGRAM_CHAT_ID;
   if (!token || !chat) {
@@ -190,7 +269,7 @@ Bun.serve({
         $magnet: lead.magnet, $quiz: lead.quiz, $utm: lead.utm, $ip: lead.ip,
       }) as { id: number };
 
-      if (await notify(lead, row.id)) markDelivered.run(row.id);
+      if (await notify(leadText(lead, row.id, body))) markDelivered.run(row.id);
 
       // Лид-магнит выдаём одноразовой ссылкой: файл не должен утекать в индекс
       let download: string | null = null;

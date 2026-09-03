@@ -133,19 +133,108 @@ function validate(array $body): ?string
 
 const CHANNEL_LABELS = ['telegram' => 'Telegram', 'max' => 'MAX', 'phone' => 'Телефон'];
 
-function lead_text(array $lead, int $id): string
+/** Имена страниц: «Заявка №10 — Полы» читается быстрее, чем «Заявка №10 — /poly». */
+const PAGE_LABELS = [
+    '/'               => 'Главная',
+    '/poly'           => 'Полы: ламинат и кварцвинил',
+    '/plitka'         => 'Плитка и керамогранит',
+    '/catalog'        => 'Каталог полов',
+    '/catalog-plitka' => 'Каталог плитки',
+    '/quiz'           => 'Квиз: полы',
+    '/quiz-plitka'    => 'Квиз: плитка',
+    '/thanks'         => 'Страница «Спасибо»',
+];
+
+function page_label(?string $page): string
 {
-    $text  = "Заявка №$id — " . ($lead['page'] ?? 'сайт') . "\n";
-    $text .= 'Имя: ' . ($lead['name'] !== '' ? $lead['name'] : 'не указано') . "\n";
-    $text .= 'Связь: ' . (CHANNEL_LABELS[$lead['channel']] ?? $lead['channel']) . ' — ' . $lead['contact'] . "\n";
-    if ($lead['geo']) $text .= 'Гео: ' . $lead['geo'] . "\n";
+    $path = rtrim((string) $page, '/') ?: '/';
+    return PAGE_LABELS[$path] ?? ((string) $page !== '' ? (string) $page : 'сайт');
+}
+
+const MAX_QUIZ_LINES = 40;
+
+/**
+ * Ответы квиза приезжают уже по-русски, готовыми строками: собирает их фронтенд
+ * (`describeQuiz` в `site/src/data/quiz.ts`) — там же, где лежат сами вопросы,
+ * иначе словарь подписей пришлось бы держать ещё и здесь, и в Bun-версии.
+ * Здесь остаётся только подрезать: текст пришёл от клиента.
+ */
+function quiz_lines(mixed $value): array
+{
+    if (!is_array($value)) return [];
+
+    $lines = [];
+    foreach (array_slice($value, 0, MAX_QUIZ_LINES) as $line) {
+        if (!is_scalar($line)) continue;
+        $lines[] = mb_substr(trim((string) preg_replace('/\s+/u', ' ', (string) $line)), 0, 200);
+    }
+    return $lines;
+}
+
+const UTM_LABELS = [
+    'utm_campaign' => 'Кампания',
+    'utm_content'  => 'Объявление',
+    'utm_term'     => 'Ключевая фраза',
+    'yclid'        => 'Клик в Директе (yclid)',
+];
+
+/**
+ * Метки визита строками. Всё, чему не нашлось подписи, уходит одной строкой:
+ * там город из ссылки и параметры выборки каталога — по ним видно, что человек
+ * смотрел до заявки.
+ */
+function utm_lines(mixed $value): array
+{
+    if (!is_array($value)) return [];
+
+    $text = static function (string $key) use ($value): string {
+        $raw = $value[$key] ?? '';
+        return is_scalar($raw) ? mb_substr(trim((string) $raw), 0, 200) : '';
+    };
+
+    $lines  = [];
+    $source = implode(' / ', array_filter([$text('utm_source'), $text('utm_medium')], static fn ($v) => $v !== ''));
+    if ($source !== '') $lines[] = 'Источник: ' . $source;
+    foreach (UTM_LABELS as $key => $label) {
+        if ($text($key) !== '') $lines[] = "$label: " . $text($key);
+    }
+
+    // `etext` — служебный токен Яндекса на пол-экрана: в базе остаётся, в письме мешает.
+    $skip = array_merge(['utm_source', 'utm_medium', 'etext'], array_keys(UTM_LABELS));
+    $rest = [];
+    foreach (array_keys($value) as $key) {
+        if (in_array((string) $key, $skip, true) || $text((string) $key) === '') continue;
+        $rest[] = $key . '=' . mb_substr($text((string) $key), 0, 60);
+        if (count($rest) >= 10) break;
+    }
+    if ($rest) $lines[] = 'Ещё из ссылки: ' . implode(', ', $rest);
+
+    return $lines;
+}
+
+/** Текст заявки — один и тот же в Telegram и в письме. */
+function lead_text(array $lead, int $id, array $body): string
+{
+    // Фронтенд мог быть старым (страница из кэша браузера) — тогда печатаем машинные
+    // ответы, как раньше: показать менеджеру JSON лучше, чем потерять разбор квиза.
+    $quiz = quiz_lines($body['quizText'] ?? null);
+    if (!$quiz && $lead['quiz']) $quiz = [(string) $lead['quiz']];
+    $utm = utm_lines($body['utm'] ?? null);
+
+    $lines = [
+        "Заявка №$id — " . page_label($lead['page']),
+        'Имя: ' . ($lead['name'] !== '' ? $lead['name'] : 'не указано'),
+        'Связь: ' . (CHANNEL_LABELS[$lead['channel']] ?? $lead['channel']) . ' — ' . $lead['contact'],
+    ];
+    if ($lead['geo']) $lines[] = 'Гео: ' . $lead['geo'];
     // «Детали», а не «Откуда»: сюда приезжает и товар из карточки,
     // и кейс портфолио, и пожелание «перезвонить в течение часа».
-    if ($lead['source']) $text .= 'Детали: ' . $lead['source'] . "\n";
-    if ($lead['magnet']) $text .= 'Лид-магнит: ' . $lead['magnet'] . "\n";
-    if ($lead['quiz'])   $text .= "\nОтветы квиза:\n" . $lead['quiz'];
-    if ($lead['utm'])    $text .= "\nUTM: " . $lead['utm'];
-    return $text;
+    if ($lead['source']) $lines[] = 'Детали: ' . $lead['source'];
+    if ($lead['magnet']) $lines[] = 'Лид-магнит: ' . $lead['magnet'];
+    if ($quiz) $lines = array_merge($lines, ['', 'Ответы квиза:'], $quiz);
+    if ($utm)  $lines = array_merge($lines, ['', 'Откуда пришёл:'], $utm);
+
+    return implode("\n", $lines);
 }
 
 function send_telegram(array $config, string $text): bool
@@ -202,12 +291,11 @@ function mail_recipients(array $config): array
     return array_values(array_unique($clean));
 }
 
-function send_mail(array $config, string $text, int $id): bool
+function send_mail(array $config, string $text, int $id, string $subject): bool
 {
     $recipients = mail_recipients($config);
     if (!$recipients || empty($config['mail_from'])) return false;
 
-    $subject = "Заявка №$id с сайта";
     $headers = [
         'From: ' . $config['mail_from'],
         'Content-Type: text/plain; charset=UTF-8',
@@ -281,9 +369,12 @@ if ($path === '/lead' && $method === 'POST') {
     $stmt->execute($lead);
     $id = (int) $pdo->lastInsertId();
 
-    $text      = lead_text($lead, $id);
+    $text      = lead_text($lead, $id, $body);
+    // Тема письма — не «Заявка №10 с сайта», а с направлением и телефоном:
+    // в списке входящих сразу видно, кому и о чём звонить.
+    $subject   = "Заявка №$id — " . page_label($lead['page']) . ', ' . $lead['contact'];
     $delivered = send_telegram($config, $text);
-    $delivered = send_mail($config, $text, $id) || $delivered;
+    $delivered = send_mail($config, $text, $id, $subject) || $delivered;
     if ($delivered) {
         $pdo->prepare('UPDATE leads SET delivered = 1 WHERE id = ?')->execute([$id]);
     } else {

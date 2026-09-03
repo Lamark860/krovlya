@@ -18,7 +18,10 @@ export type QuizOption = { value: string; label: string; note?: string };
 
 export type QuizStep = {
   id: string;
+  /** Вопрос на экране: «Мне нужен пол…» */
   title: string;
+  /** Та же мысль одним словом — для письма менеджеру: «Покрытие» */
+  label: string;
   hint?: string;
   multiple?: boolean;
   options: QuizOption[];
@@ -32,6 +35,25 @@ export type AreaInfo = {
   material: number;
   /** Строка-разбор: из чего сложились метры */
   note: string;
+};
+
+/**
+ * Расчёт, который человек видит на экране результата и который уезжает
+ * в заявку. Считает `components/Quiz.astro` — цены берутся из каталога,
+ * а он есть только там.
+ */
+export type Estimate = {
+  area: number;
+  material: number;
+  note: string;
+  materialLow: number;
+  materialHigh: number;
+  workLow: number;
+  workHigh: number;
+  /** Почему работы вышли в ноль — словами */
+  workNote: string;
+  totalLow: number;
+  totalHigh: number;
 };
 
 export type QuizConfig = {
@@ -90,6 +112,7 @@ const poly: QuizConfig = {
     {
       id: "kind",
       title: "Мне нужен пол…",
+      label: "Покрытие",
       options: [
         { value: "laminate", label: "Ламинат", note: "теплее на ощупь, дешевле" },
         { value: "spc", label: "Кварцвинил, SPC", note: "не боится воды" },
@@ -99,6 +122,7 @@ const poly: QuizConfig = {
     {
       id: "rooms",
       title: "Пол нужен для…",
+      label: "Пол нужен для",
       options: [
         { value: "1", label: "Одной комнаты", note: "около 18 м²" },
         { value: "2", label: "Двух комнат", note: "около 32 м²" },
@@ -110,6 +134,7 @@ const poly: QuizConfig = {
     {
       id: "place",
       title: "Пол будет лежать…",
+      label: "Где кладём",
       options: [
         { value: "flat", label: "В квартире" },
         { value: "house", label: "В частном доме" },
@@ -120,6 +145,7 @@ const poly: QuizConfig = {
     {
       id: "warm",
       title: "Тёплый пол…",
+      label: "Тёплый пол",
       options: [
         { value: "yes", label: "Уже есть" },
         { value: "plan", label: "Планирую" },
@@ -129,6 +155,7 @@ const poly: QuizConfig = {
     {
       id: "extra",
       title: "Кроме покрытия нужно…",
+      label: "Ещё нужно",
       hint: "можно выбрать несколько",
       multiple: true,
       options: [
@@ -213,6 +240,7 @@ const plitka: QuizConfig = {
     {
       id: "room",
       title: "Отделываем…",
+      label: "Отделываем",
       options: [
         { value: "bath", label: "Санузел", note: "пол и стены" },
         { value: "apron", label: "Кухонный фартук" },
@@ -224,6 +252,7 @@ const plitka: QuizConfig = {
     {
       id: "size",
       title: "Площадь примерно…",
+      label: "Площадь",
       hint: "для санузла — площадь помещения, стены посчитаем сами",
       options: [
         { value: "4", label: "До 4 м²", note: "типовой санузел" },
@@ -236,6 +265,7 @@ const plitka: QuizConfig = {
     {
       id: "format",
       title: "Из форматов нравится…",
+      label: "Формат",
       options: [
         { value: "small", label: "Мелкий формат и «кабанчик»", note: "20×20, 10×30" },
         { value: "600", label: "600×600", note: "универсальный" },
@@ -246,6 +276,7 @@ const plitka: QuizConfig = {
     {
       id: "scope",
       title: "Нужен…",
+      label: "Что нужно",
       options: [
         { value: "material", label: "Только материал", note: "расчёт количества бесплатно" },
         { value: "laying", label: "Материал и укладка" },
@@ -255,6 +286,7 @@ const plitka: QuizConfig = {
     {
       id: "when",
       title: "Начинаем…",
+      label: "Сроки",
       options: [
         { value: "now", label: "Сейчас" },
         { value: "soon", label: "Через 1–3 месяца" },
@@ -329,3 +361,51 @@ const plitka: QuizConfig = {
 
 export const QUIZ: Record<string, QuizConfig> = { poly, plitka };
 export { price as rowPrice, perMetre as rowPerMetre };
+
+// ------------------------------------------------------ письмо менеджеру -----
+
+/** Деньги словами: вилка «40 000 — 59 800 ₽», при совпавших краях — одно число. */
+const money = (value: number) => value.toLocaleString("ru-RU");
+const range = (low: number, high: number) =>
+  low === high ? `${money(low)} ₽` : `${money(low)} — ${money(high)} ₽`;
+
+/**
+ * Итог квиза человеческим текстом — тем, что менеджер увидит в письме и в Telegram.
+ * До 03.09 туда уезжал сырой JSON ответов (`"channel":"telegram"`), и перед звонком
+ * его приходилось расшифровывать — правка Артура.
+ *
+ * Собирается здесь, а не на сервере, намеренно: подписи вопросов и вариантов лежат
+ * в этом же файле, и словарь на стороне приёма заявок (а их две реализации —
+ * `api/server.ts` для стенда и `api-php/index.php` для боя) разъехался бы с ними
+ * на первой же правке квиза. Сервер печатает готовые строки и о квизе не знает
+ * ничего; машинные ответы всё так же уходят в базу отдельным полем.
+ */
+export function describeQuiz(config: QuizConfig, answers: Answers, estimate: Estimate): string[] {
+  const labelOf = (options: QuizOption[], value: string) =>
+    options.find((option) => option.value === value)?.label ?? value;
+
+  const lines = config.steps.flatMap((step) => {
+    const answer = answers[step.id];
+    const values = (Array.isArray(answer) ? answer : [answer]).filter(Boolean) as string[];
+    if (!values.length) return [];
+    return [`${step.label}: ${values.map((value) => labelOf(step.options, value)).join(", ")}`];
+  });
+
+  if (answers.gift) lines.push(`Подарок: ${labelOf(config.gifts, String(answers.gift))}`);
+
+  // Ноль в работах бывает по двум разным причинам, и звонящему важно, по какой:
+  // либо работы дарим по акции, либо человек берёт только материал.
+  const work = estimate.workHigh > 0
+    ? range(estimate.workLow, estimate.workHigh)
+    : config.workIsGift(answers)
+      ? "в подарок по акции"
+      : "не нужны — клиент берёт только материал";
+
+  return lines.concat([
+    "",
+    `Расчёт: ${estimate.note}`,
+    `${config.materialLabel}: ${range(estimate.materialLow, estimate.materialHigh)}`,
+    `Работы: ${work}`,
+    `Итого: ${range(estimate.totalLow, estimate.totalHigh)}`,
+  ]);
+}
