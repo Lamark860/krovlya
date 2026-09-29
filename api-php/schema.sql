@@ -1,6 +1,6 @@
 -- Схема заявок под MySQL 8. Перенос с SQLite (api/server.ts): те же поля,
 -- те же значения по умолчанию. Ставится один раз через phpMyAdmin в ispmanager
--- или командой: mysql -u u3616302_default -p u3616302_default < schema.sql
+-- или командой: mysql -u uXXXXXXX_default -p uXXXXXXX_default < schema.sql
 
 CREATE TABLE IF NOT EXISTS leads (
   id         INT AUTO_INCREMENT PRIMARY KEY,

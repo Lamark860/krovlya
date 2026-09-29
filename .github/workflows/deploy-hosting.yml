@@ -33,7 +33,10 @@ jobs:
           # Печётся в статику: canonical, OG, robots.txt. Домен кириллический —
           # в адресах он живёт в punycode, иначе canonical получается неоднозначным.
           PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://xn--18-mlcpochedr0a.xn--p1ai' }}
-          PUBLIC_INDEXABLE: ${{ vars.PUBLIC_INDEXABLE || '0' }}
+          # Бой открыт поиску со 02.09.2026. Умолчание — «открыт»: пропадёт или
+          # переименуется переменная — сайт не закроется молча. Закрыть (стенд,
+          # переезд) — переменной PUBLIC_INDEXABLE=0 в настройках репозитория.
+          PUBLIC_INDEXABLE: ${{ vars.PUBLIC_INDEXABLE || '1' }}
         run: |
           bun install --frozen-lockfile
           bun run build
@@ -47,6 +50,23 @@ jobs:
           mkdir -p release/api
           cp api-php/index.php release/api/index.php
           echo "в релизе файлов: $(find release -type f | wc -l)"
+
+      # С 29.09.2026: закрытая от поиска сборка на бой не уезжает. Раньше умолчание
+      # было «закрыт», и ручная выкатка молча закрыла бы бой — проверка выкатки
+      # смотрела только код ответа robots.txt, а не его содержимое.
+      - name: Проверить, что сборка открыта поиску
+        if: ${{ vars.PUBLIC_INDEXABLE != '0' }}
+        run: |
+          set -e
+          if grep -qx 'Disallow: /' release/robots.txt; then
+            echo "robots.txt закрывает сайт целиком — сборка не открыта поиску"; exit 1
+          fi
+          for f in index.html poly.html plitka.html; do
+            if grep -q 'name="robots" content="noindex' "release/$f"; then
+              echo "в $f стоит noindex"; exit 1
+            fi
+          done
+          echo "сборка открыта поиску"
 
       - name: Залить на хостинг
         env:
@@ -114,4 +134,14 @@ jobs:
           # 404 должен быть 404, а не 200: иначе поисковик считает мусорные адреса страницами.
           c=$(code /nonexistent)
           [ "$c" = "404" ] || { echo "несуществующий адрес отдал $c"; exit 1; }
+
+          # Бой открыт поиску: robots.txt не закрывает сайт целиком, на главной нет noindex.
+          if [ "${{ vars.PUBLIC_INDEXABLE }}" != "0" ]; then
+            if curl -s "$BASE/robots.txt" | grep -qx 'Disallow: /'; then
+              echo "robots.txt на бою закрывает сайт"; exit 1
+            fi
+            if curl -s "$BASE/" | grep -q 'name="robots" content="noindex'; then
+              echo "на главной noindex"; exit 1
+            fi
+          fi
           echo "проверки пройдены"

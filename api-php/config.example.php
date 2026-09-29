@@ -9,8 +9,8 @@
 return [
     // MySQL хостинга. Логин/пароль — из раздела «Доступы» в личном кабинете.
     'db_host' => 'localhost',
-    'db_name' => 'u3616302_default',
-    'db_user' => 'u3616302_default',
+    'db_name' => 'uXXXXXXX_default',
+    'db_user' => 'uXXXXXXX_default',
     'db_pass' => '',
 
     // Куда падают заявки письмом. Адресов может быть несколько — строкой через
@@ -26,5 +26,5 @@ return [
     'telegram_chat_id' => '',
 
     // PDF лид-магнитов. ВНЕ webroot: скачать можно только по одноразовому токену.
-    'files_dir' => '/var/www/u3616302/data/files',
+    'files_dir' => '/var/www/uXXXXXXX/data/files',
 ];

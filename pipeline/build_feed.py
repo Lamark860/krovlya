@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "data" / "catalog.json"
 OUT_DIR = ROOT / "data" / "feeds"
 
-# TODO: «company» уточнить после ответа на блокер Б1 (ИП Дмитриев А.Н. или ООО «Респект»)
+# TODO: «company» уточнить после ответа на внутренний вопрос Б1 (форма юрлица)
 SHOP = {
     "name": "Мой ремонт",
     "company": "ООО «Респект»",
